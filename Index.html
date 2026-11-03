@@ -1,29 +1,32 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#07101f">
 <title>PROJET ORION</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#07101f;color:#eaf2ff;font-family:Arial,sans-serif}
-header{padding:22px 15px;text-align:center;background:linear-gradient(135deg,#10264a,#07101f);border-bottom:1px solid #29466f}
-h1{margin:0;color:#73c7ff;letter-spacing:3px}
+header{padding:25px 12px;text-align:center;background:linear-gradient(135deg,#10264a,#07101f);border-bottom:1px solid #29466f}
+h1{margin:0;color:#73c7ff;letter-spacing:3px;font-size:28px}
 .subtitle{color:#9eb6d8;margin-top:8px}
-main{max-width:850px;margin:auto;padding:15px}
+main{max-width:850px;margin:auto;padding:12px}
 .panel{background:#101d32;border:1px solid #29466f;border-radius:12px;padding:15px;margin:14px 0}
 h2{color:#73c7ff;font-size:19px;margin-top:0}
+h3{color:#c4e8ff;margin:0 0 8px}
 .resources{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .resource{background:#172943;padding:12px;border-radius:8px}
-button{background:#1767a8;color:white;border:0;padding:11px 14px;border-radius:7px;margin:5px 3px;cursor:pointer}
-button:disabled{background:#48566a;color:#aaa}
-.small{color:#9eb6d8;font-size:13px}
-.progress{height:7px;background:#263b58;border-radius:8px;overflow:hidden;margin:8px 0}
-.bar{height:100%;background:#54c7ff;width:0%}
 .planet{background:#172943;padding:13px;border-radius:9px;margin:10px 0}
-.planet h3{margin:0 0 7px;color:#c4e8ff}
-.locked{opacity:.65}
+.small{color:#9eb6d8;font-size:13px;line-height:1.5}
+button{background:#1767a8;color:white;border:0;padding:11px 14px;border-radius:7px;margin:5px 3px;cursor:pointer;font-size:14px}
+button:disabled{background:#48566a;color:#aaa}
+.progress{height:8px;background:#263b58;border-radius:8px;overflow:hidden;margin:8px 0}
+.bar{height:100%;background:#54c7ff}
 #status{color:#9ee6b0;min-height:20px}
+.locked{opacity:.8}
+footer{text-align:center;color:#7892b6;font-size:12px;padding:20px}
 </style>
 </head>
 <body>
@@ -31,6 +34,7 @@ button:disabled{background:#48566a;color:#aaa}
 <h1>PROJET ORION</h1>
 <div class="subtitle">Univers galactique • Version 0.4</div>
 </header>
+
 <main>
 <section class="panel">
 <h2>🌍 NOVA-01 — Planète mère</h2>
@@ -42,6 +46,7 @@ button:disabled{background:#48566a;color:#aaa}
 <div class="resource">🧪 Deutérium : <b id="deut">400</b></div>
 <div class="resource">⚡ Énergie : <b id="energy">14</b></div>
 </div>
+<p class="small">Production automatique des ressources.</p>
 <p id="status"></p>
 </section>
 
@@ -70,111 +75,191 @@ button:disabled{background:#48566a;color:#aaa}
 <h2>🛰️ Missions d'exploration</h2>
 <div id="missions">Aucune mission en cours.</div>
 </section>
+
+<section class="panel">
+<h2>📋 File de construction</h2>
+<div id="queue"></div>
+</section>
+
+<footer>PROJET ORION — Le commencement d'un nouvel univers</footer>
 </main>
+
 <script>
 const defaults={
-metal:1500,crystal:1000,deut:400,energy:14,
-buildings:{metal:1,crystal:1,solar:1,shipyard:0,lab:0},
-ships:{or1:0,or2:0},
-tech:{energy:0,propulsion:0,defense:0},
-queue:[],mission:null,discovered:["nova"]
+ metal:1500,crystal:1000,deut:400,energy:14,
+ buildings:{metal:1,crystal:1,solar:1,shipyard:0,lab:0},
+ ships:{or1:0,or2:0},
+ tech:{energy:0,propulsion:0,defense:0},
+ queue:[],mission:null,discovered:["nova"]
 };
+
 let game;
 try{
-game={...defaults,...JSON.parse(localStorage.getItem("orionSave")||"{}")};
-game.buildings={...defaults.buildings,...game.buildings};
-game.ships={...defaults.ships,...game.ships};
-game.tech={...defaults.tech,...game.tech};
-game.queue=Array.isArray(game.queue)?game.queue:[];
+ const old=JSON.parse(localStorage.getItem("orionSave")||"null");
+ game={
+  ...defaults,...(old||{}),
+  buildings:{...defaults.buildings,...(old?.buildings||{})},
+  ships:{...defaults.ships,...(old?.ships||{})},
+  tech:{...defaults.tech,...(old?.tech||{})},
+  queue:Array.isArray(old?.queue)?old.queue:[],
+  discovered:Array.isArray(old?.discovered)?old.discovered:["nova"]
+ };
 }catch(e){game={...defaults};}
+
+if(!game.discovered.includes("nova"))game.discovered.push("nova");
+
 const planets=[
-{id:"nova",name:"NOVA-01",system:"Solaria",coords:"1:1:1",desc:"Votre planète mère.",cost:0,time:0,reward:0},
-{id:"lyra",name:"LYRA-02",system:"Solaria",coords:"1:1:2",desc:"Une planète rocheuse riche en métal.",cost:100,time:30,reward:500},
-{id:"vega",name:"VEGA-03",system:"Solaria",coords:"1:1:3",desc:"Un monde glacé riche en cristal.",cost:150,time:45,reward:400},
-{id:"orion",name:"ORION-04",system:"Asterion",coords:"1:2:1",desc:"Une planète mystérieuse aux réserves de deutérium.",cost:250,time:60,reward:600},
-{id:"zenith",name:"ZENITH-05",system:"Asterion",coords:"1:2:2",desc:"Un monde lointain encore inexploré.",cost:350,time:90,reward:800}
+ {id:"nova",name:"NOVA-01",system:"Solaria",coords:"1:1:1",desc:"Votre planète mère.",cost:0,time:0,reward:0},
+ {id:"lyra",name:"LYRA-02",system:"Solaria",coords:"1:1:2",desc:"Une planète rocheuse riche en métal.",cost:100,time:30,reward:500},
+ {id:"vega",name:"VEGA-03",system:"Solaria",coords:"1:1:3",desc:"Un monde glacé riche en cristal.",cost:150,time:45,reward:400},
+ {id:"orion",name:"ORION-04",system:"Asterion",coords:"1:2:1",desc:"Une planète mystérieuse aux réserves de deutérium.",cost:250,time:60,reward:600},
+ {id:"zenith",name:"ZENITH-05",system:"Asterion",coords:"1:2:2",desc:"Un monde lointain encore inexploré.",cost:350,time:90,reward:800}
 ];
-function save(){localStorage.setItem("orionSave",JSON.stringify(game));}
-function message(t){document.getElementById("status").textContent=t;}
-function fmt(n){return Math.floor(n).toLocaleString("fr-FR");}
-function can(m,c,d){return game.metal>=m&&game.crystal>=c&&game.deut>=d;}
-function spend(m,c,d){game.metal-=m;game.crystal-=c;game.deut-=d;}
-</script>
-function addQueue(name,costM,costC,costD,time,type,id){
- if(game.queue.length>=3){message("File de construction pleine !");return;}
- if(!can(costM,costC,costD)){message("Ressources insuffisantes.");return;}
- spend(costM,costC,costD);
- game.queue.push({name,timeLeft:time,total:time,type,id});
- save();render();
+
+const researches=[
+ {id:"energy",name:"Technologie énergétique",m:300,c:300,d:0,time:60,desc:"Améliore les connaissances énergétiques."},
+ {id:"propulsion",name:"Propulsion spatiale",m:500,c:400,d:100,time:90,desc:"Débloque l'intercepteur OR-2."},
+ {id:"defense",name:"Technologie de défense",m:400,c:500,d:0,time:75,desc:"Développe les capacités défensives."}
+];
+
+function save(){
+ localStorage.setItem("orionSave",JSON.stringify(game));
 }
+function message(t){
+ document.getElementById("status").textContent=t;
+}
+function fmt(n){
+ return Math.floor(n).toLocaleString("fr-FR");
+}
+function can(m,c,d){
+ return game.metal>=m&&game.crystal>=c&&game.deut>=d;
+}
+function spend(m,c,d){
+ game.metal-=m;
+ game.crystal-=c;
+ game.deut-=d;
+}
+
+function addQueue(name,m,c,d,time,type,id){
+ if(game.queue.length>=3){
+  message("La file de construction est pleine (3 maximum).");
+  return;
+ }
+ if(!can(m,c,d)){
+  message("Ressources insuffisantes.");
+  return;
+ }
+ spend(m,c,d);
+ game.queue.push({name,timeLeft:time,total:time,type,id});
+ message(name+" ajouté à la file.");
+ save();
+ render();
+}
+
 function building(name,level,m,c,d,time,id){
  return `<div class="planet">
  <h3>${name} — Niveau ${level}</h3>
- <p class="small">Coût : ${m} métal, ${c} cristal, ${d} deutérium</p>
- <button onclick="addQueue('${name}',${m},${c},${d},${time},'building','${id}')">Construire niveau suivant</button>
+ <p class="small">Coût : ${m} métal • ${c} cristal • ${d} deutérium</p>
+ <button onclick="addQueue('${name}',${m},${c},${d},${time},'building','${id}')">
+ Construire niveau suivant
+ </button>
  </div>`;
 }
+
 function renderBuildings(){
- let b=game.buildings;
+ const b=game.buildings;
  document.getElementById("buildings").innerHTML=
  building("Mine de métal",b.metal,200*b.metal,100*b.metal,0,30,"metal")+
  building("Mine de cristal",b.crystal,150*b.crystal,200*b.crystal,0,45,"crystal")+
  building("Centrale solaire",b.solar,180*b.solar,80*b.solar,0,30,"solar")+
  building("Chantier spatial",b.shipyard,300,200,100,60,"shipyard")+
- building("Laboratoire scientifique",b.lab,600,400,0,60,"lab")+
- `<p>File de construction : ${game.queue.length}/3</p>`+
- game.queue.map((q,i)=>`<p class="small">${q.name} — ${q.timeLeft}s restantes</p>`).join("");
+ building("Laboratoire scientifique",b.lab,600,400,0,60,"lab");
 }
-const researches=[
- {id:"energy",name:"Technologie énergétique",m:300,c:300,d:0,time:60},
- {id:"propulsion",name:"Propulsion spatiale",m:500,c:400,d:100,time:90},
- {id:"defense",name:"Technologie de défense",m:400,c:500,d:0,time:75}
-];
+
 function startResearch(r){
- if(game.buildings.lab<1){message("Construisez d'abord un laboratoire.");return;}
- if(game.queue.some(q=>q.type==="research")){message("Une recherche est déjà en cours.");return;}
- if(game.tech[r.id]>=1){message("Cette recherche est déjà terminée.");return;}
+ if(game.buildings.lab<1){
+  message("Construisez d'abord un laboratoire scientifique.");
+  return;
+ }
+ if(game.tech[r.id]>=1){
+  message("Cette recherche est déjà terminée.");
+  return;
+ }
+ if(game.queue.some(q=>q.type==="research")){
+  message("Une recherche est déjà en cours.");
+  return;
+ }
  addQueue(r.name,r.m,r.c,r.d,r.time,"research",r.id);
 }
+
 function renderResearch(){
  document.getElementById("research").innerHTML=researches.map(r=>
- `<div class="planet"><h3>${r.name}</h3>
- <p class="small">Coût : ${r.m} métal, ${r.c} cristal, ${r.d} deutérium</p>
+ `<div class="planet">
+ <h3>${r.name}</h3>
+ <p class="small">${r.desc}</p>
+ <p class="small">Coût : ${r.m} métal • ${r.c} cristal • ${r.d} deutérium</p>
  <p>Niveau : ${game.tech[r.id]}</p>
- <button onclick="startResearch(researches.find(x=>x.id==='${r.id}'))" ${game.tech[r.id]>=1?"disabled":""}>Lancer la recherche</button></div>`
+ <button onclick="startResearch(researches.find(x=>x.id==='${r.id}'))" ${game.tech[r.id]>=1?"disabled":""}>
+ ${game.tech[r.id]>=1?"Recherche terminée":"Lancer la recherche"}
+ </button>
+ </div>`
  ).join("");
 }
+
 function buildShip(id){
- if(game.buildings.shipyard<1){message("Construisez d'abord un chantier spatial.");return;}
+ if(game.buildings.shipyard<1){
+  message("Construisez d'abord un chantier spatial.");
+  return;
+ }
  if(id==="or1"){
- addQueue("Vaisseau éclaireur OR-1",500,300,100,60,"ship","or1");
+  addQueue("Vaisseau éclaireur OR-1",500,300,100,60,"ship","or1");
  }else{
- if(game.tech.propulsion<1){message("La propulsion spatiale est nécessaire.");return;}
- addQueue("Intercepteur OR-2",1000,700,300,90,"ship","or2");
+  if(game.tech.propulsion<1){
+   message("La propulsion spatiale est nécessaire.");
+   return;
+  }
+  addQueue("Intercepteur OR-2",1000,700,300,90,"ship","or2");
  }
 }
+
 function renderFleet(){
  document.getElementById("fleet").innerHTML=`
- <div class="planet"><h3>🛰️ Éclaireur OR-1</h3>
- <p>En service : ${game.ships.or1}</p>
- <p class="small">Coût : 500 métal, 300 cristal, 100 deutérium</p>
- <button onclick="buildShip('or1')">Construire OR-1</button></div>
- <div class="planet"><h3>🚀 Intercepteur OR-2</h3>
- <p>En service : ${game.ships.or2}</p>
- <p class="small">Nécessite la propulsion spatiale.</p>
- <button onclick="buildShip('or2')">Construire OR-2</button></div>`;
+ <div class="planet">
+ <h3>🛰️ Éclaireur OR-1</h3>
+ <p>Vaisseaux en service : ${game.ships.or1}</p>
+ <p class="small">Coût : 500 métal • 300 cristal • 100 deutérium</p>
+ <button onclick="buildShip('or1')">Construire OR-1</button>
+ </div>
+ <div class="planet">
+ <h3>🚀 Intercepteur OR-2</h3>
+ <p>Vaisseaux en service : ${game.ships.or2}</p>
+ <p class="small">Nécessite la technologie de propulsion.</p>
+ <button onclick="buildShip('or2')">Construire OR-2</button>
+ </div>`;
 }
+
 function explore(id){
  const p=planets.find(x=>x.id===id);
- if(!p||game.discovered.includes(id)){return;}
- if(game.mission){message("Une mission est déjà en cours.");return;}
- if(game.ships.or1<1){message("Il faut au moins un OR-1 pour explorer.");return;}
- if(!can(p.cost,0,0)){message("Métal insuffisant pour cette mission.");return;}
+ if(!p||game.discovered.includes(id))return;
+ if(game.mission){
+  message("Une mission d'exploration est déjà en cours.");
+  return;
+ }
+ if(game.ships.or1<1){
+  message("Il faut au moins un éclaireur OR-1 pour explorer.");
+  return;
+ }
+ if(!can(p.cost,0,0)){
+  message("Métal insuffisant pour cette mission.");
+  return;
+ }
  spend(p.cost,0,0);
- game.mission={id,timeLeft:p.time,total:p.time};
+ game.mission={id:p.id,timeLeft:p.time,total:p.time};
  message("Mission lancée vers "+p.name+" !");
- save();render();
+ save();
+ render();
 }
+
 function renderGalaxy(){
  document.getElementById("galaxy").innerHTML=planets.map(p=>{
  const known=game.discovered.includes(p.id);
@@ -182,46 +267,83 @@ function renderGalaxy(){
  <h3>${known?"🪐":"🔒"} ${known?p.name:"Planète inconnue"}</h3>
  <p class="small">Système : ${p.system} • Coordonnées : [${p.coords}]</p>
  <p>${known?p.desc:"Données inconnues. Envoyez un éclaireur pour la découvrir."}</p>
- ${known?"<b>Planète découverte</b>":`<p class="small">Coût : ${p.cost} métal • Durée : ${p.time} secondes</p>
+ ${known?
+ "<b>Planète découverte</b>":
+ `<p class="small">Coût : ${p.cost} métal • Durée : ${p.time} secondes</p>
  <button onclick="explore('${p.id}')">Envoyer OR-1 en exploration</button>`}
  </div>`;
  }).join("");
 }
+
 function renderMission(){
  const box=document.getElementById("missions");
- if(!game.mission){box.innerHTML="Aucune mission en cours.";return;}
+ if(!game.mission){
+  box.innerHTML="Aucune mission en cours.";
+  return;
+ }
  const p=planets.find(x=>x.id===game.mission.id);
- box.innerHTML=`<div class="planet"><h3>🛰️ Exploration : ${p.name}</h3>
+ if(!p){
+  game.mission=null;
+  box.innerHTML="Aucune mission en cours.";
+  return;
+ }
+ const percent=Math.max(0,Math.min(100,100*(1-game.mission.timeLeft/game.mission.total)));
+ box.innerHTML=`<div class="planet">
+ <h3>🛰️ Exploration : ${p.name}</h3>
  <p>Temps restant : <b>${game.mission.timeLeft} secondes</b></p>
- <div class="progress"><div class="bar" style="width:${100*(1-game.mission.timeLeft/game.mission.total)}%"></div></div>
+ <div class="progress"><div class="bar" style="width:${percent}%"></div></div>
  </div>`;
 }
-function render(){
- document.getElementById("metal").textContent=fmt(game.metal);
- document.getElementById("crystal").textContent=fmt(game.crystal);
- document.getElementById("deut").textContent=fmt(game.deut);
- document.getElementById("energy").textContent=fmt(game.energy);
- renderBuildings();renderResearch();renderFleet();renderGalaxy();renderMission();
+
+function renderQueue(){
+ const box=document.getElementById("queue");
+ if(!game.queue.length){
+  box.innerHTML="Aucune construction ou recherche en cours.";
+  return;
+ }
+ box.innerHTML=game.queue.map(q=>{
+  const percent=Math.max(0,Math.min(100,100*(1-q.timeLeft/q.total)));
+  return `<div class="planet">
+  <h3>${q.name}</h3>
+  <p>Temps restant : ${q.timeLeft} secondes</p>
+  <div class="progress"><div class="bar" style="width:${percent}%"></div></div>
+  </div>`;
+ }).join("");
 }
-function completeQueue(){
- const now=[];
- game.queue.forEach(q=>{
-  if(q.timeLeft<=0){
-   if(q.type==="building")game.buildings[q.id]++;
-   if(q.type==="research")game.tech[q.id]++;
-   if(q.type==="ship")game.ships[q.id]++;
-   message(q.name+" terminé !");
-  }else now.push(q);
- });
- game.queue=now;
+
+function completeItem(q){
+ if(q.type==="building"&&game.buildings[q.id]!==undefined){
+  game.buildings[q.id]++;
+ }
+ if(q.type==="research"&&game.tech[q.id]!==undefined){
+  game.tech[q.id]++;
+ }
+ if(q.type==="ship"&&game.ships[q.id]!==undefined){
+  game.ships[q.id]++;
+ }
+ message(q.name+" terminé !");
 }
+
 function tick(){
- game.metal+=game.buildings.metal*0.5;
- game.crystal+=game.buildings.crystal*0.25;
- game.deut+=game.buildings.solar*0.02;
- game.energy=14+game.buildings.solar*5;
- game.queue.forEach(q=>q.timeLeft--);
- completeQueue();
+ // Production horaire, calculée chaque seconde.
+ game.metal+=game.buildings.metal*30/3600;
+ game.crystal+=game.buildings.crystal*15/3600;
+ game.deut+=game.buildings.solar*4/3600;
+ game.energy=9+game.buildings.solar*5;
+
+ // Avancement de la file.
+ const remaining=[];
+ for(const q of game.queue){
+  q.timeLeft--;
+  if(q.timeLeft<=0){
+   completeItem(q);
+  }else{
+   remaining.push(q);
+  }
+ }
+ game.queue=remaining;
+
+ // Avancement de l'exploration.
  if(game.mission){
   game.mission.timeLeft--;
   if(game.mission.timeLeft<=0){
@@ -234,10 +356,25 @@ function tick(){
    game.mission=null;
   }
  }
- save();render();
+ save();
+ render();
 }
+
+function render(){
+ document.getElementById("metal").textContent=fmt(game.metal);
+ document.getElementById("crystal").textContent=fmt(game.crystal);
+ document.getElementById("deut").textContent=fmt(game.deut);
+ document.getElementById("energy").textContent=fmt(game.energy);
+ renderBuildings();
+ renderResearch();
+ renderFleet();
+ renderGalaxy();
+ renderMission();
+ renderQueue();
+}
+
 render();
 setInterval(tick,1000);
 </script>
 </body>
-  </html>
+</html>
