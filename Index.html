@@ -100,3 +100,106 @@ function fmt(n){return Math.floor(n).toLocaleString("fr-FR");}
 function can(m,c,d){return game.metal>=m&&game.crystal>=c&&game.deut>=d;}
 function spend(m,c,d){game.metal-=m;game.crystal-=c;game.deut-=d;}
 </script>
+function addQueue(name,costM,costC,costD,time,type,id){
+ if(game.queue.length>=3){message("File de construction pleine !");return;}
+ if(!can(costM,costC,costD)){message("Ressources insuffisantes.");return;}
+ spend(costM,costC,costD);
+ game.queue.push({name,timeLeft:time,total:time,type,id});
+ save();render();
+}
+function building(name,level,m,c,d,time,id){
+ return `<div class="planet">
+ <h3>${name} — Niveau ${level}</h3>
+ <p class="small">Coût : ${m} métal, ${c} cristal, ${d} deutérium</p>
+ <button onclick="addQueue('${name}',${m},${c},${d},${time},'building','${id}')">Construire niveau suivant</button>
+ </div>`;
+}
+function renderBuildings(){
+ let b=game.buildings;
+ document.getElementById("buildings").innerHTML=
+ building("Mine de métal",b.metal,200*b.metal,100*b.metal,0,30,"metal")+
+ building("Mine de cristal",b.crystal,150*b.crystal,200*b.crystal,0,45,"crystal")+
+ building("Centrale solaire",b.solar,180*b.solar,80*b.solar,0,30,"solar")+
+ building("Chantier spatial",b.shipyard,300,200,100,60,"shipyard")+
+ building("Laboratoire scientifique",b.lab,600,400,0,60,"lab")+
+ `<p>File de construction : ${game.queue.length}/3</p>`+
+ game.queue.map((q,i)=>`<p class="small">${q.name} — ${q.timeLeft}s restantes</p>`).join("");
+}
+const researches=[
+ {id:"energy",name:"Technologie énergétique",m:300,c:300,d:0,time:60},
+ {id:"propulsion",name:"Propulsion spatiale",m:500,c:400,d:100,time:90},
+ {id:"defense",name:"Technologie de défense",m:400,c:500,d:0,time:75}
+];
+function startResearch(r){
+ if(game.buildings.lab<1){message("Construisez d'abord un laboratoire.");return;}
+ if(game.queue.some(q=>q.type==="research")){message("Une recherche est déjà en cours.");return;}
+ if(game.tech[r.id]>=1){message("Cette recherche est déjà terminée.");return;}
+ addQueue(r.name,r.m,r.c,r.d,r.time,"research",r.id);
+}
+function renderResearch(){
+ document.getElementById("research").innerHTML=researches.map(r=>
+ `<div class="planet"><h3>${r.name}</h3>
+ <p class="small">Coût : ${r.m} métal, ${r.c} cristal, ${r.d} deutérium</p>
+ <p>Niveau : ${game.tech[r.id]}</p>
+ <button onclick="startResearch(researches.find(x=>x.id==='${r.id}'))" ${game.tech[r.id]>=1?"disabled":""}>Lancer la recherche</button></div>`
+ ).join("");
+}
+function buildShip(id){
+ if(game.buildings.shipyard<1){message("Construisez d'abord un chantier spatial.");return;}
+ if(id==="or1"){
+ addQueue("Vaisseau éclaireur OR-1",500,300,100,60,"ship","or1");
+ }else{
+ if(game.tech.propulsion<1){message("La propulsion spatiale est nécessaire.");return;}
+ addQueue("Intercepteur OR-2",1000,700,300,90,"ship","or2");
+ }
+}
+function renderFleet(){
+ document.getElementById("fleet").innerHTML=`
+ <div class="planet"><h3>🛰️ Éclaireur OR-1</h3>
+ <p>En service : ${game.ships.or1}</p>
+ <p class="small">Coût : 500 métal, 300 cristal, 100 deutérium</p>
+ <button onclick="buildShip('or1')">Construire OR-1</button></div>
+ <div class="planet"><h3>🚀 Intercepteur OR-2</h3>
+ <p>En service : ${game.ships.or2}</p>
+ <p class="small">Nécessite la propulsion spatiale.</p>
+ <button onclick="buildShip('or2')">Construire OR-2</button></div>`;
+}
+function explore(id){
+ const p=planets.find(x=>x.id===id);
+ if(!p||game.discovered.includes(id)){return;}
+ if(game.mission){message("Une mission est déjà en cours.");return;}
+ if(game.ships.or1<1){message("Il faut au moins un OR-1 pour explorer.");return;}
+ if(!can(p.cost,0,0)){message("Métal insuffisant pour cette mission.");return;}
+ spend(p.cost,0,0);
+ game.mission={id,timeLeft:p.time,total:p.time};
+ message("Mission lancée vers "+p.name+" !");
+ save();render();
+}
+function renderGalaxy(){
+ document.getElementById("galaxy").innerHTML=planets.map(p=>{
+ const known=game.discovered.includes(p.id);
+ return `<div class="planet ${known?"":"locked"}">
+ <h3>${known?"🪐":"🔒"} ${known?p.name:"Planète inconnue"}</h3>
+ <p class="small">Système : ${p.system} • Coordonnées : [${p.coords}]</p>
+ <p>${known?p.desc:"Données inconnues. Envoyez un éclaireur pour la découvrir."}</p>
+ ${known?"<b>Planète découverte</b>":`<p class="small">Coût : ${p.cost} métal • Durée : ${p.time} secondes</p>
+ <button onclick="explore('${p.id}')">Envoyer OR-1 en exploration</button>`}
+ </div>`;
+ }).join("");
+}
+function renderMission(){
+ const box=document.getElementById("missions");
+ if(!game.mission){box.innerHTML="Aucune mission en cours.";return;}
+ const p=planets.find(x=>x.id===game.mission.id);
+ box.innerHTML=`<div class="planet"><h3>🛰️ Exploration : ${p.name}</h3>
+ <p>Temps restant : <b>${game.mission.timeLeft} secondes</b></p>
+ <div class="progress"><div class="bar" style="width:${100*(1-game.mission.timeLeft/game.mission.total)}%"></div></div>
+ </div>`;
+}
+function render(){
+ document.getElementById("metal").textContent=fmt(game.metal);
+ document.getElementById("crystal").textContent=fmt(game.crystal);
+ document.getElementById("deut").textContent=fmt(game.deut);
+ document.getElementById("energy").textContent=fmt(game.energy);
+ renderBuildings();renderResearch();renderFleet();renderGalaxy();renderMission();
+}
