@@ -1,1 +1,121 @@
 
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PROJET ORION</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#07111f;color:#e8f3ff;font-family:Arial,sans-serif}
+header{text-align:center;padding:22px;background:#10243d;border-bottom:2px solid #20bfff}
+h1{color:#43c8ff;margin:0}
+main{max-width:700px;margin:auto;padding:15px}
+.panel{background:#12243a;border:1px solid #285078;border-radius:12px;padding:15px;margin:12px 0}
+.resources{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.resource{background:#091a2c;padding:12px;border-radius:8px}
+button{background:#087eb8;color:white;border:0;border-radius:8px;padding:11px;margin-top:8px;width:100%;font-weight:bold}
+button:disabled{background:#465566}
+.planet{height:150px;border-radius:50%;width:150px;margin:15px auto;background:radial-gradient(circle at 35% 30%,#8bd5e8,#267a9e 45%,#102d60 75%);box-shadow:0 0 35px #168acb}
+small{color:#a9c6df}
+</style>
+</head>
+<body>
+<header>
+<h1>PROJET ORION</h1>
+<p>UNIVERS GALACTIQUE • VERSION 0.1</p>
+</header>
+<main>
+<div class="panel" style="text-align:center">
+<h2>NOVA-01</h2>
+<div class="planet"></div>
+<p>Planète de départ • Secteur Orion</p>
+<small>Votre civilisation commence ici.</small>
+</div>
+
+<div class="panel">
+<h2>📦 Ressources</h2>
+<div class="resources">
+<div class="resource">🔩 Métal<br><b id="metal">1500</b></div>
+<div class="resource">💎 Cristal<br><b id="crystal">1000</b></div>
+<div class="resource">☢️ Deutérium<br><b id="deut">400</b></div>
+<div class="resource">⚡ Énergie<br><b id="energy">14</b></div>
+</div>
+</div>
+
+<div class="panel">
+<h2>🏗️ Bâtiments</h2>
+<p>Mine de métal : niveau <b id="mLvl">1</b></p>
+<button onclick="build('metal')">Améliorer — 200 métal</button>
+<p>Mine de cristal : niveau <b id="cLvl">1</b></p>
+<button onclick="build('crystal')">Améliorer — 200 métal</button>
+<p>Centrale solaire : niveau <b id="eLvl">1</b></p>
+<button onclick="build('energy')">Améliorer — 150 métal</button>
+<p>Chantier spatial : niveau <b id="sLvl">0</b></p>
+<button onclick="build('shipyard')">Construire — 500 métal, 200 cristal</button>
+</div>
+
+<div class="panel">
+<h2>🚀 Chantier spatial</h2>
+<p>Vaisseau éclaireur OR-1 : <b id="ships">0</b></p>
+<button id="shipButton" onclick="makeShip()">Construire OR-1 — 500 métal, 300 cristal, 100 deutérium</button>
+<p id="message">Bienvenue dans PROJET ORION, commandant.</p>
+</div>
+
+<div class="panel">
+<h2>🌌 Journal de bord</h2>
+<p id="log">Votre colonie vient d'être fondée sur NOVA-01.</p>
+</div>
+</main>
+
+<script>
+let game=JSON.parse(localStorage.getItem("orionSave"))||{
+metal:1500,crystal:1000,deut:400,energy:14,
+mLvl:1,cLvl:1,eLvl:1,sLvl:0,ships:0
+};
+function save(){
+localStorage.setItem("orionSave",JSON.stringify(game));
+}
+function update(){
+["metal","crystal","deut","energy","mLvl","cLvl","eLvl","sLvl","ships"].forEach(k=>{
+document.getElementById(k).textContent=Math.floor(game[k]);
+});
+document.getElementById("shipButton").disabled=game.sLvl<1;
+}
+function build(type){
+if(type==="metal"||type==="crystal"){
+if(game.metal<200)return alert("Pas assez de métal !");
+game.metal-=200;game[type==="metal"?"mLvl":"cLvl"]++;
+}
+if(type==="energy"){
+if(game.metal<150)return alert("Pas assez de métal !");
+game.metal-=150;game.eLvl++;
+game.energy+=5;
+}
+if(type==="shipyard"){
+if(game.metal<500||game.crystal<200)return alert("Ressources insuffisantes !");
+game.metal-=500;game.crystal-=200;game.sLvl++;
+}
+document.getElementById("log").textContent="Construction terminée : "+type;
+save();update();
+}
+function makeShip(){
+if(game.sLvl<1)return;
+if(game.metal<500||game.crystal<300||game.deut<100)
+return alert("Ressources insuffisantes !");
+game.metal-=500;game.crystal-=300;game.deut-=100;
+game.ships++;
+document.getElementById("message").textContent="Un éclaireur OR-1 a rejoint votre flotte !";
+save();update();
+}
+setInterval(()=>{
+game.metal+=game.mLvl*0.5;
+game.crystal+=game.cLvl*0.25;
+game.deut+=game.eLvl*0.07;
+save();update();
+},1000);
+update();
+</script>
+</body>
+</html>
+
