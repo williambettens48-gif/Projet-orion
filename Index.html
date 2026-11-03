@@ -3,65 +3,33 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>PROJET ORION - Univers 3D</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#020611;color:#eaf4ff;font-family:Arial,sans-serif;overflow:hidden}
 #space{position:fixed;inset:0}
 canvas{display:block}
-#top{
- position:fixed;top:0;left:0;right:0;z-index:5;
- display:flex;justify-content:space-between;align-items:center;
- padding:12px 16px;background:linear-gradient(#030917ee,#03091788);
- border-bottom:1px solid #28415e;gap:10px;flex-wrap:wrap
-}
+#top{position:fixed;top:0;left:0;right:0;z-index:5;display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:linear-gradient(#030917ee,#03091788);border-bottom:1px solid #28415e;gap:10px;flex-wrap:wrap}
 .logo{font-weight:bold;letter-spacing:3px;color:#67d9ff}
 .resources{display:flex;gap:14px;flex-wrap:wrap;font-size:12px}
-.resource{color:#b9d8f4}
-.resource b{color:white;margin-left:4px}
-#menu{
- position:fixed;top:75px;left:12px;z-index:5;
- display:flex;flex-direction:column;gap:7px
-}
-button{
- background:#0b1c32dd;border:1px solid #315474;color:#d9efff;
- padding:10px 13px;border-radius:6px;font-size:12px;cursor:pointer
-}
+.resource{color:#b9d8f4}.resource b{color:white;margin-left:4px}
+#menu{position:fixed;top:75px;left:12px;z-index:5;display:flex;flex-direction:column;gap:7px}
+button{background:#0b1c32ed;border:1px solid #315474;color:#d9efff;padding:10px 13px;border-radius:6px;font-size:12px;cursor:pointer}
 button:active{background:#17618a}
-#panel{
- position:fixed;right:12px;top:80px;width:245px;z-index:5;
- background:#061326eF;border:1px solid #315474;border-radius:9px;
- padding:14px;box-shadow:0 0 25px #0008
-}
+#panel{position:fixed;right:12px;top:80px;width:245px;z-index:5;background:#061326ed;border:1px solid #315474;border-radius:9px;padding:14px;box-shadow:0 0 25px #0008}
 #panel h2{font-size:17px;color:#71d9ff;margin:0 0 8px}
 #panel p{font-size:12px;color:#b5cce0;line-height:1.5}
 #panel .coords{color:#65cfff;font-size:12px}
 #panel button{width:100%;margin-top:6px}
-#bottom{
- position:fixed;bottom:0;left:0;right:0;z-index:5;
- text-align:center;padding:10px;background:linear-gradient(transparent,#020611ee);
- color:#8ba9c4;font-size:11px;pointer-events:none
-}
-#help{
- position:fixed;left:12px;bottom:42px;z-index:5;
- font-size:11px;color:#9ab6d0;background:#061326bb;
- padding:9px;border-radius:6px;line-height:1.6
-}
-#loading{
- position:fixed;inset:0;z-index:20;background:#020611;
- display:flex;align-items:center;justify-content:center;
- color:#68d9ff;font-size:20px;letter-spacing:3px
-}
+#bottom{position:fixed;bottom:0;left:0;right:0;z-index:5;text-align:center;padding:10px;background:linear-gradient(transparent,#020611ee);color:#8ba9c4;font-size:11px;pointer-events:none}
+#help{position:fixed;left:12px;bottom:42px;z-index:5;font-size:11px;color:#9ab6d0;background:#061326bb;padding:9px;border-radius:6px;line-height:1.6}
+#loading{position:fixed;inset:0;z-index:20;background:#020611;display:flex;align-items:center;justify-content:center;color:#68d9ff;font-size:20px;letter-spacing:3px}
 @media(max-width:650px){
- #top{padding:9px}
- .logo{font-size:13px}
- .resources{gap:8px;font-size:10px}
- #menu{top:75px;left:7px}
- button{padding:8px;font-size:10px}
+ #top{padding:9px}.logo{font-size:13px}.resources{gap:8px;font-size:10px}
+ #menu{top:75px;left:7px}button{padding:8px;font-size:10px}
  #panel{top:auto;bottom:72px;right:7px;width:185px;padding:10px}
- #panel h2{font-size:14px}
- #panel p{font-size:11px}
+ #panel h2{font-size:14px}#panel p{font-size:11px}
  #help{left:7px;bottom:42px;font-size:9px;max-width:145px}
 }
 </style>
@@ -82,9 +50,11 @@ button:active{background:#17618a}
 
 <div id="menu">
  <button onclick="focusPlanet('NOVA-01')">⌖ PLANÈTE MÈRE</button>
- <button onclick="resetView()">◎ VUE GÉNÉRALE</button>
+ <button onclick="resetView()">◎ VUE GALACTIQUE</button>
  <button onclick="zoomIn()">＋ ZOOM</button>
  <button onclick="zoomOut()">－ ZOOM</button>
+ <button onclick="surfaceView()">🌍 VUE RAPPROCHÉE</button>
+ <button onclick="spaceView()">🚀 RETOUR ESPACE</button>
 </div>
 
 <div id="panel">
@@ -96,10 +66,10 @@ button:active{background:#17618a}
 </div>
 
 <div id="help">
- Souris ou doigt : tourner la caméra<br>
- Molette ou pincement : zoomer<br>
+ Glisser : tourner la caméra<br>
+ Molette / pincement : zoomer<br>
  Cliquer sur une planète : sélectionner<br>
- Glisser : explorer l'espace
+ VUE RAPPROCHÉE : observer NOVA-01
 </div>
 
 <div id="bottom">UNIVERS SOLARIA · EXPLORATION SPATIALE 3D · PROTOTYPE ORION</div>
@@ -108,10 +78,9 @@ button:active{background:#17618a}
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 
 const container=document.getElementById('space');
-
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x020611);
-scene.fog=new THREE.FogExp2(0x020611,0.00065);
+scene.fog=new THREE.FogExp2(0x020611,0.00055);
 
 const camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,0.1,3000);
 camera.position.set(0,45,100);
@@ -121,90 +90,134 @@ renderer.setPixelRatio(Math.min(devicePixelRatio,2));
 renderer.setSize(innerWidth,innerHeight);
 renderer.outputColorSpace=THREE.SRGBColorSpace;
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure=1.25;
+renderer.toneMappingExposure=1.2;
 container.appendChild(renderer.domElement);
 
-scene.add(new THREE.AmbientLight(0x7893bb,1.1));
-
-const sunLight=new THREE.PointLight(0xffffff,2500,1000,1.5);
+scene.add(new THREE.AmbientLight(0x7893bb,1.15));
+const sunLight=new THREE.PointLight(0xffffff,2600,1000,1.5);
 sunLight.position.set(0,0,0);
 scene.add(sunLight);
 
+// Étoiles
 const starGeometry=new THREE.BufferGeometry();
 const starPositions=[];
-for(let i=0;i<7000;i++){
- const radius=400+Math.random()*1000;
- const theta=Math.random()*Math.PI*2;
- const phi=Math.acos(2*Math.random()-1);
- starPositions.push(
- radius*Math.sin(phi)*Math.cos(theta),
- radius*Math.cos(phi),
- radius*Math.sin(phi)*Math.sin(theta)
- );
+for(let i=0;i<9000;i++){
+ const r=400+Math.random()*1100;
+ const t=Math.random()*Math.PI*2;
+ const p=Math.acos(2*Math.random()-1);
+ starPositions.push(r*Math.sin(p)*Math.cos(t),r*Math.cos(p),r*Math.sin(p)*Math.sin(t));
 }
 starGeometry.setAttribute('position',new THREE.Float32BufferAttribute(starPositions,3));
-const starMaterial=new THREE.PointsMaterial({color:0xffffff,size:1.25,sizeAttenuation:true});
-scene.add(new THREE.Points(starGeometry,starMaterial));
+scene.add(new THREE.Points(starGeometry,new THREE.PointsMaterial({color:0xffffff,size:1.3,sizeAttenuation:true})));
 
-const planets=[];
-let selected=null;
+// Textures procédurales de NOVA-01
+function makeEarthTexture(){
+ const c=document.createElement('canvas');
+ c.width=1024;c.height=512;
+ const ctx=c.getContext('2d');
+ const img=ctx.createImageData(c.width,c.height);
+ for(let y=0;y<c.height;y++){
+  for(let x=0;x<c.width;x++){
+   const n=Math.random();
+   const wave=Math.sin(x*.018+Math.sin(y*.025)*3)+Math.cos(y*.035+x*.009);
+   let r=12,g=55,b=105;
+   if(wave>0.9 && n>.25){r=45+Math.random()*25;g=105+Math.random()*65;b=45+Math.random()*20}
+   if(wave>1.45 && n>.35){r=110;g=105;b=65}
+   if(y<35 || y>477){r=190;g=215;b=230}
+   const i=(y*c.width+x)*4;
+   img.data[i]=r;img.data[i+1]=g;img.data[i+2]=b;img.data[i+3]=255;
+  }
+ }
+ ctx.putImageData(img,0,0);
+ // Formes de continents stylisées
+ for(let j=0;j<45;j++){
+  const x=Math.random()*1024,y=50+Math.random()*410;
+  const rx=12+Math.random()*65,ry=8+Math.random()*28;
+  ctx.fillStyle=['#397c48','#548b51','#a18c59','#39704a'][Math.floor(Math.random()*4)];
+  ctx.beginPath();
+  ctx.ellipse(x,y,rx,ry,Math.random()*2,0,Math.PI*2);
+  ctx.fill();
+ }
+ const tex=new THREE.CanvasTexture(c);
+ tex.colorSpace=THREE.SRGBColorSpace;
+ return tex;
+}
+
+function makeCloudTexture(){
+ const c=document.createElement('canvas');
+ c.width=1024;c.height=512;
+ const ctx=c.getContext('2d');
+ for(let i=0;i<900;i++){
+  const x=Math.random()*1024,y=Math.random()*512;
+  const rx=5+Math.random()*30,ry=2+Math.random()*12;
+  ctx.fillStyle='rgba(255,255,255,'+(0.04+Math.random()*.18)+')';
+  ctx.beginPath();ctx.ellipse(x,y,rx,ry,Math.random(),0,Math.PI*2);ctx.fill();
+ }
+ return new THREE.CanvasTexture(c);
+}
 
 function makeLabel(name){
- const canvas=document.createElement('canvas');
- canvas.width=512;canvas.height=128;
- const ctx=canvas.getContext('2d');
- ctx.fillStyle='#ffffff';
- ctx.font='bold 42px Arial';
- ctx.textAlign='center';
+ const c=document.createElement('canvas');c.width=512;c.height=128;
+ const ctx=c.getContext('2d');
+ ctx.fillStyle='#fff';ctx.font='bold 42px Arial';ctx.textAlign='center';
  ctx.fillText(name,256,75);
- const texture=new THREE.CanvasTexture(canvas);
- const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:texture,transparent:true}));
+ const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true}));
  sprite.scale.set(12,3,1);
  return sprite;
 }
+
+const planets=[];
+let selected=null;
+let novaClouds=null;
+let novaBuildings=null;
 
 function createPlanet(data){
  const group=new THREE.Group();
  group.position.set(data.x,0,data.z);
  scene.add(group);
 
- const geometry=new THREE.SphereGeometry(data.radius,64,64);
- const material=new THREE.MeshStandardMaterial({
-  color:data.color,
-  roughness:data.roughness??0.85,
-  metalness:0.02
- });
- const sphere=new THREE.Mesh(geometry,material);
+ let material;
+ if(data.name==='NOVA-01'){
+  material=new THREE.MeshStandardMaterial({map:makeEarthTexture(),roughness:.9});
+ }else{
+  material=new THREE.MeshStandardMaterial({color:data.color,roughness:.85});
+ }
+ const sphere=new THREE.Mesh(new THREE.SphereGeometry(data.radius,72,72),material);
  sphere.userData.planet=data;
  group.add(sphere);
 
  if(data.atmosphere){
-  const atmosphere=new THREE.Mesh(
-   new THREE.SphereGeometry(data.radius*1.06,48,48),
-   new THREE.MeshBasicMaterial({
-    color:data.atmosphere,transparent:true,opacity:0.13,
-    side:THREE.BackSide
-   })
+  group.add(new THREE.Mesh(
+   new THREE.SphereGeometry(data.radius*1.07,48,48),
+   new THREE.MeshBasicMaterial({color:data.atmosphere,transparent:true,opacity:.12,side:THREE.BackSide})
+  ));
+ }
+
+ if(data.name==='NOVA-01'){
+  novaClouds=new THREE.Mesh(
+   new THREE.SphereGeometry(data.radius*1.025,64,64),
+   new THREE.MeshStandardMaterial({map:makeCloudTexture(),transparent:true,opacity:.42,depthWrite:false})
   );
-  group.add(atmosphere);
+  group.add(novaClouds);
+  const glow=new THREE.Mesh(
+   new THREE.SphereGeometry(data.radius*1.12,48,48),
+   new THREE.MeshBasicMaterial({color:0x399fff,transparent:true,opacity:.08,side:THREE.BackSide})
+  );
+  group.add(glow);
  }
 
  const label=makeLabel(data.name);
  label.position.y=data.radius+3;
  group.add(label);
 
- const orbitGeometry=new THREE.BufferGeometry();
- const orbitPoints=[];
+ const points=[];
  for(let i=0;i<=180;i++){
   const a=i/180*Math.PI*2;
-  orbitPoints.push(new THREE.Vector3(
-   Math.cos(a)*data.distance,0,Math.sin(a)*data.distance
-  ));
+  points.push(new THREE.Vector3(Math.cos(a)*data.distance,0,Math.sin(a)*data.distance));
  }
- orbitGeometry.setFromPoints(orbitPoints);
  const orbit=new THREE.Line(
-  orbitGeometry,
-  new THREE.LineBasicMaterial({color:0x31516d,transparent:true,opacity:0.55})
+  new THREE.BufferGeometry().setFromPoints(points),
+  new THREE.LineBasicMaterial({color:0x31516d,transparent:true,opacity:.55})
  );
  scene.add(orbit);
 
@@ -212,37 +225,32 @@ function createPlanet(data){
  return group;
 }
 
-// Étoile centrale
-const sun=new THREE.Mesh(
- new THREE.SphereGeometry(7,64,64),
- new THREE.MeshBasicMaterial({color:0xffc65c})
-);
+// Étoile
+const sun=new THREE.Mesh(new THREE.SphereGeometry(7,64,64),new THREE.MeshBasicMaterial({color:0xffc65c}));
 scene.add(sun);
-
 const sunGlow=new THREE.Mesh(
  new THREE.SphereGeometry(9,48,48),
- new THREE.MeshBasicMaterial({color:0xff9c35,transparent:true,opacity:0.13})
+ new THREE.MeshBasicMaterial({color:0xff9c35,transparent:true,opacity:.13})
 );
 scene.add(sunGlow);
 
-// Système solaire SOLARIA
+// Système SOLARIA
 const worldData=[
- {name:'NOVA-01',coords:'[1:1:1]',description:'Votre planète mère. Le début de votre civilisation.',type:'Tellurique',x:20,z:0,distance:20,radius:4.5,color:0x3988bb,atmosphere:0x62c9ff,speed:0.12},
- {name:'LYRA-02',coords:'[1:1:2]',description:'Une planète rocheuse à explorer.',type:'Rocheuse',x:34,z:0,distance:34,radius:3.2,color:0xb77d54,speed:0.075},
- {name:'VEGA-03',coords:'[1:1:3]',description:'Un monde désertique riche en ressources.',type:'Désertique',x:50,z:0,distance:50,radius:5,color:0xc7a25d,atmosphere:0xd6a95d,speed:0.05},
- {name:'ORION-04',coords:'[1:1:4]',description:'Une planète glacée aux températures extrêmes.',type:'Glaciaire',x:69,z:0,distance:69,radius:4,color:0x91c9dc,atmosphere:0x9beaff,speed:0.035},
- {name:'ZENITH-05',coords:'[1:1:5]',description:'Un monde géant aux bandes nuageuses.',type:'Géante gazeuse',x:94,z:0,distance:94,radius:9,color:0xc58c6b,speed:0.022},
- {name:'TITAN-06',coords:'[1:1:6]',description:'Une planète lointaine encore mystérieuse.',type:'Géante gazeuse',x:125,z:0,distance:125,radius:7,color:0x9279b7,speed:0.015},
- {name:'ECLIPSE-07',coords:'[1:1:7]',description:'Un monde obscur à découvrir.',type:'Rocheuse',x:158,z:0,distance:158,radius:3.5,color:0x66717e,speed:0.012}
+ {name:'NOVA-01',coords:'[1:1:1]',description:'Votre planète mère. Le berceau de votre civilisation.',type:'Tellurique',x:20,z:0,distance:20,radius:4.5,color:0x3988bb,atmosphere:0x62c9ff,speed:.12},
+ {name:'LYRA-02',coords:'[1:1:2]',description:'Une planète rocheuse à explorer.',type:'Rocheuse',x:34,z:0,distance:34,radius:3.2,color:0xb77d54,speed:.075},
+ {name:'VEGA-03',coords:'[1:1:3]',description:'Un monde désertique riche en ressources.',type:'Désertique',x:50,z:0,distance:50,radius:5,color:0xc7a25d,atmosphere:0xd6a95d,speed:.05},
+ {name:'ORION-04',coords:'[1:1:4]',description:'Une planète glacée aux températures extrêmes.',type:'Glaciaire',x:69,z:0,distance:69,radius:4,color:0x91c9dc,atmosphere:0x9beaff,speed:.035},
+ {name:'ZENITH-05',coords:'[1:1:5]',description:'Un monde géant aux bandes nuageuses.',type:'Géante gazeuse',x:94,z:0,distance:94,radius:9,color:0xc58c6b,speed:.022},
+ {name:'TITAN-06',coords:'[1:1:6]',description:'Une planète lointaine encore mystérieuse.',type:'Géante gazeuse',x:125,z:0,distance:125,radius:7,color:0x9279b7,speed:.015},
+ {name:'ECLIPSE-07',coords:'[1:1:7]',description:'Un monde obscur à découvrir.',type:'Rocheuse',x:158,z:0,distance:158,radius:3.5,color:0x66717e,speed:.012}
 ];
-
 worldData.forEach(createPlanet);
 
 // Anneaux de ZENITH
 const zenith=planets.find(p=>p.data.name==='ZENITH-05');
 const ring=new THREE.Mesh(
  new THREE.RingGeometry(12,17,100),
- new THREE.MeshBasicMaterial({color:0xc6a57b,side:THREE.DoubleSide,transparent:true,opacity:0.6})
+ new THREE.MeshBasicMaterial({color:0xc6a57b,side:THREE.DoubleSide,transparent:true,opacity:.6})
 );
 ring.rotation.x=Math.PI/2;
 zenith.group.add(ring);
@@ -251,29 +259,61 @@ zenith.group.add(ring);
 const moonOrbit=new THREE.Group();
 planets[0].group.add(moonOrbit);
 const moon=new THREE.Mesh(
- new THREE.SphereGeometry(0.9,32,32),
+ new THREE.SphereGeometry(.9,32,32),
  new THREE.MeshStandardMaterial({color:0xaaaaaa,roughness:1})
 );
 moon.position.set(8,0,0);
 moonOrbit.add(moon);
 
-// Contrôle caméra
+// Petits bâtiments visibles sur NOVA-01
+function addSurfaceBuildings(){
+ const planet=planets.find(p=>p.data.name==='NOVA-01');
+ novaBuildings=new THREE.Group();
+ planet.group.add(novaBuildings);
+ const positions=[
+  [0.3,0.95,0.2],[-.55,.82,.35],[.75,.55,-.35],
+  [-.8,.25,-.2],[.2,.5,.9]
+ ];
+ positions.forEach((v,i)=>{
+  const dir=new THREE.Vector3(v[0],v[1],v[2]).normalize();
+  const building=new THREE.Group();
+  building.position.copy(dir.multiplyScalar(4.53));
+  building.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir);
+  const h=.18+Math.random()*.22;
+  const base=new THREE.Mesh(
+   new THREE.CylinderGeometry(.09,.14,h,6),
+   new THREE.MeshStandardMaterial({color:i===0?0x58d9ff:0x8799aa,metalness:.5,roughness:.4})
+  );
+  base.position.y=h/2;
+  building.add(base);
+  const light=new THREE.Mesh(
+   new THREE.SphereGeometry(.055,8,8),
+   new THREE.MeshBasicMaterial({color:0x4be9ff})
+  );
+  light.position.y=h+.03;
+  building.add(light);
+  novaBuildings.add(building);
+ });
+}
+addSurfaceBuildings();
+
+// Caméra orbitale
 let target=new THREE.Vector3(0,0,0);
 let radius=105;
-let angle=0.3;
-let elevation=0.45;
-let dragging=false;
-let moved=false;
+let angle=.3;
+let elevation=.45;
+let dragging=false,moved=false;
 let lastX=0,lastY=0;
 let pinchDistance=0;
+let surfaceMode=false;
 
 function updateCamera(){
- elevation=Math.max(0.06,Math.min(1.48,elevation));
- radius=Math.max(12,Math.min(280,radius));
+ elevation=Math.max(.06,Math.min(1.48,elevation));
+ radius=Math.max(5,Math.min(280,radius));
  camera.position.set(
- target.x+radius*Math.sin(angle)*Math.cos(elevation),
- target.y+radius*Math.sin(elevation),
- target.z+radius*Math.cos(angle)*Math.cos(elevation)
+  target.x+radius*Math.sin(angle)*Math.cos(elevation),
+  target.y+radius*Math.sin(elevation),
+  target.z+radius*Math.cos(angle)*Math.cos(elevation)
  );
  camera.lookAt(target);
 }
@@ -285,11 +325,10 @@ renderer.domElement.addEventListener('pointerdown',e=>{
 });
 renderer.domElement.addEventListener('pointermove',e=>{
  if(!dragging)return;
- const dx=e.clientX-lastX;
- const dy=e.clientY-lastY;
+ const dx=e.clientX-lastX,dy=e.clientY-lastY;
  if(Math.abs(dx)+Math.abs(dy)>2)moved=true;
- angle-=dx*0.006;
- elevation+=dy*0.006;
+ angle-=dx*.006;
+ elevation+=dy*.006;
  lastX=e.clientX;lastY=e.clientY;
  updateCamera();
 });
@@ -297,47 +336,31 @@ renderer.domElement.addEventListener('pointerup',e=>{
  dragging=false;
  if(!moved)selectAt(e.clientX,e.clientY);
 });
-
 renderer.domElement.addEventListener('wheel',e=>{
- radius+=e.deltaY*0.08;
- updateCamera();
+ radius+=e.deltaY*.08;updateCamera();
 },{passive:true});
-
 renderer.domElement.addEventListener('touchstart',e=>{
  if(e.touches.length===2){
-  pinchDistance=Math.hypot(
-   e.touches[0].clientX-e.touches[1].clientX,
-   e.touches[0].clientY-e.touches[1].clientY
-  );
+  pinchDistance=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
  }
 },{passive:true});
-
 renderer.domElement.addEventListener('touchmove',e=>{
  if(e.touches.length===2){
-  const d=Math.hypot(
-   e.touches[0].clientX-e.touches[1].clientX,
-   e.touches[0].clientY-e.touches[1].clientY
-  );
-  radius-= (d-pinchDistance)*0.18;
-  pinchDistance=d;
-  updateCamera();
+  const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+  radius-=(d-pinchDistance)*.18;
+  pinchDistance=d;updateCamera();
  }
 },{passive:true});
 
 const raycaster=new THREE.Raycaster();
 const pointer=new THREE.Vector2();
-
 function selectAt(x,y){
- pointer.x=(x/innerWidth)*2-1;
+ pointer.x=x/innerWidth*2-1;
  pointer.y=-(y/innerHeight)*2+1;
  raycaster.setFromCamera(pointer,camera);
  const hits=raycaster.intersectObjects(planets.map(p=>p.sphere));
- if(hits.length){
-  const data=hits[0].object.userData.planet;
-  selectPlanet(data.name);
- }
+ if(hits.length)selectPlanet(hits[0].object.userData.planet.name);
 }
-
 function selectPlanet(name){
  const item=planets.find(p=>p.data.name===name);
  if(!item)return;
@@ -345,14 +368,14 @@ function selectPlanet(name){
  document.getElementById('planetName').textContent=item.data.name;
  document.getElementById('planetCoords').textContent='Coordonnées : '+item.data.coords;
  document.getElementById('planetDescription').textContent=item.data.description;
- document.getElementById('planetInfo').innerHTML=
-  'Type : '+item.data.type+'<br>Système : SOLARIA';
+ document.getElementById('planetInfo').innerHTML='Type : '+item.data.type+'<br>Système : SOLARIA';
 }
 
 window.focusPlanet=function(name){
  const item=planets.find(p=>p.data.name===name);
  if(!item)return;
  selectPlanet(name);
+ surfaceMode=false;
  target.copy(item.group.position);
  radius=25;
  updateCamera();
@@ -361,22 +384,44 @@ window.focusSelected=function(){
  if(selected)focusPlanet(selected.data.name);
 };
 window.resetView=function(){
+ surfaceMode=false;
  target.set(0,0,0);
- radius=105;angle=0.3;elevation=0.45;
+ radius=105;angle=.3;elevation=.45;
  updateCamera();
 };
-window.zoomIn=function(){radius*=0.75;updateCamera()};
+window.zoomIn=function(){radius*=.75;updateCamera()};
 window.zoomOut=function(){radius*=1.3;updateCamera()};
 
-// Sauvegarde locale 3D séparée : conserve l'ancien orionSave.
-let gameSave;
-try{
- gameSave=JSON.parse(localStorage.getItem('orion3D')||'null');
-}catch(e){gameSave=null}
+window.surfaceView=function(){
+ const item=selected||planets[0];
+ if(!item)return;
+ selected=item;
+ surfaceMode=true;
+ target.copy(item.group.position);
+ radius=item.data.radius*2.8;
+ elevation=.35;
+ updateCamera();
+ document.getElementById('planetDescription').textContent=
+  'Vue orbitale rapprochée de '+item.data.name+'. Observez sa surface et ses installations.';
+};
+window.spaceView=function(){
+ surfaceMode=false;
+ resetView();
+};
 
-const resources=gameSave?.resources||{
+// Ressources : récupération de l'ancienne sauvegarde si elle existe.
+let oldSave=null;
+let newSave=null;
+try{oldSave=JSON.parse(localStorage.getItem('orionSave')||'null')}catch(e){}
+try{newSave=JSON.parse(localStorage.getItem('orion3D')||'null')}catch(e){}
+
+let resources=newSave?.resources||oldSave?.resources||{
  metal:10000,crystal:10000,deut:0,energy:0
 };
+resources.metal=Number(resources.metal??10000);
+resources.crystal=Number(resources.crystal??10000);
+resources.deut=Number(resources.deut??0);
+resources.energy=Number(resources.energy??0);
 
 function displayResources(){
  document.getElementById('metal').textContent=Math.floor(resources.metal).toLocaleString('fr-FR');
@@ -391,27 +436,27 @@ function saveGame(){
  }));
 }
 displayResources();
-
-if(gameSave?.selected)selectPlanet(gameSave.selected);
+if(newSave?.selected)selectPlanet(newSave.selected);
 else selectPlanet('NOVA-01');
 
-// Animation
+// Animation de l'univers
 const clock=new THREE.Clock();
 function animate(){
  requestAnimationFrame(animate);
  const delta=clock.getDelta();
- sun.rotation.y+=delta*0.08;
+ sun.rotation.y+=delta*.08;
  planets.forEach(p=>{
-  p.group.rotation.y+=delta*0.12;
+  p.sphere.rotation.y+=delta*.08;
+  if(p.data.name!=='NOVA-01')p.group.rotation.y+=delta*.015;
   const a=delta*p.data.speed;
-  const x=p.group.position.x;
-  const z=p.group.position.z;
   const d=p.data.distance;
-  const next=Math.atan2(z,x)+a;
-  p.group.position.x=Math.cos(next)*d;
-  p.group.position.z=Math.sin(next)*d;
+  const current=Math.atan2(p.group.position.z,p.group.position.x)+a;
+  p.group.position.x=Math.cos(current)*d;
+  p.group.position.z=Math.sin(current)*d;
  });
- moonOrbit.rotation.y+=delta*0.45;
+ if(novaClouds)novaClouds.rotation.y+=delta*.025;
+ moonOrbit.rotation.y+=delta*.45;
+ if(novaBuildings)novaBuildings.rotation.y+=delta*.002;
  renderer.render(scene,camera);
 }
 animate();
@@ -422,7 +467,6 @@ window.addEventListener('resize',()=>{
  renderer.setSize(innerWidth,innerHeight);
 });
 window.addEventListener('beforeunload',saveGame);
-
 document.getElementById('loading').style.display='none';
 </script>
 </body>
