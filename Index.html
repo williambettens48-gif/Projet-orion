@@ -3,27 +3,30 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#07111f">
 <title>PROJET ORION</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#07111f;color:#e8f3ff;font-family:Arial,sans-serif}
-header{text-align:center;padding:22px;background:#10243d;border-bottom:2px solid #20bfff}
+body{margin:0;background:#07111f;color:#e8f3ff;font-family:Arial}
+header{text-align:center;padding:20px;background:#10243d;border-bottom:2px solid #20bfff}
 h1{color:#43c8ff;margin:0}
-main{max-width:700px;margin:auto;padding:15px}
+main{max-width:700px;margin:auto;padding:14px}
 .panel{background:#12243a;border:1px solid #285078;border-radius:12px;padding:15px;margin:12px 0}
-.resources{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.resources{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
 .resource{background:#091a2c;padding:12px;border-radius:8px}
-button{background:#087eb8;color:white;border:0;border-radius:8px;padding:11px;margin-top:8px;width:100%;font-weight:bold}
+button{background:#087eb8;color:white;border:0;border-radius:8px;padding:12px;margin-top:7px;width:100%;font-weight:bold}
 button:disabled{background:#465566}
-.planet{height:150px;border-radius:50%;width:150px;margin:15px auto;background:radial-gradient(circle at 35% 30%,#8bd5e8,#267a9e 45%,#102d60 75%);box-shadow:0 0 35px #168acb}
+.planet{height:150px;width:150px;margin:15px auto;border-radius:50%;background:radial-gradient(circle at 35% 30%,#a2eaff,#267a9e 45%,#102d60 75%);box-shadow:0 0 35px #168acb}
 small{color:#a9c6df}
+.progress{height:12px;background:#07111f;border-radius:8px;overflow:hidden;margin:10px 0}
+.bar{height:100%;background:#22c8ff;width:0%}
 </style>
 </head>
 <body>
 <header>
 <h1>PROJET ORION</h1>
-<p>UNIVERS GALACTIQUE • VERSION 0.1</p>
+<p>UNIVERS GALACTIQUE • VERSION 0.2</p>
 </header>
 <main>
 <div class="panel" style="text-align:center">
@@ -45,21 +48,20 @@ small{color:#a9c6df}
 
 <div class="panel">
 <h2>🏗️ Bâtiments</h2>
-<p>Mine de métal : niveau <b id="mLvl">1</b></p>
-<button onclick="build('metal')">Améliorer — 200 métal</button>
-<p>Mine de cristal : niveau <b id="cLvl">1</b></p>
-<button onclick="build('crystal')">Améliorer — 200 métal</button>
-<p>Centrale solaire : niveau <b id="eLvl">1</b></p>
-<button onclick="build('energy')">Améliorer — 150 métal</button>
-<p>Chantier spatial : niveau <b id="sLvl">0</b></p>
-<button onclick="build('shipyard')">Construire — 500 métal, 200 cristal</button>
+<div id="buildings"></div>
 </div>
 
 <div class="panel">
-<h2>🚀 Chantier spatial</h2>
-<p>Vaisseau éclaireur OR-1 : <b id="ships">0</b></p>
-<button id="shipButton" onclick="makeShip()">Construire OR-1 — 500 métal, 300 cristal, 100 deutérium</button>
-<p id="message">Bienvenue dans PROJET ORION, commandant.</p>
+<h2>⏳ Chantier en cours</h2>
+<p id="construction">Aucune construction en cours.</p>
+<div class="progress"><div class="bar" id="bar"></div></div>
+<p id="timer"></p>
+</div>
+
+<div class="panel">
+<h2>🚀 Flotte spatiale</h2>
+<p>Éclaireurs OR-1 : <b id="ships">0</b></p>
+<button onclick="startBuild('ship')">Construire OR-1 — 500 métal, 300 cristal, 100 deutérium</button>
 </div>
 
 <div class="panel">
@@ -69,53 +71,91 @@ small{color:#a9c6df}
 </main>
 
 <script>
-let game=JSON.parse(localStorage.getItem("orionSave"))||{
+const initial={
 metal:1500,crystal:1000,deut:400,energy:14,
-mLvl:1,cLvl:1,eLvl:1,sLvl:0,ships:0
+mLvl:1,cLvl:1,eLvl:1,sLvl:0,ships:0,
+queue:[],last:Date.now()
+};
+let game;
+try{
+game=JSON.parse(localStorage.getItem("orionSave"))||initial;
+}catch(e){game=initial}
+if(!Array.isArray(game.queue))game.queue=[];
+const definitions={
+metal:{name:"Mine de métal",cost:{metal:200},time:30,level:"mLvl"},
+crystal:{name:"Mine de cristal",cost:{metal:200},time:45,level:"cLvl"},
+energy:{name:"Centrale solaire",cost:{metal:150},time:30,level:"eLvl"},
+shipyard:{name:"Chantier spatial",cost:{metal:500,crystal:200},time:60,level:"sLvl"},
+ship:{name:"Éclaireur OR-1",cost:{metal:500,crystal:300,deut:100},time:60}
 };
 function save(){
+game.last=Date.now();
 localStorage.setItem("orionSave",JSON.stringify(game));
 }
+function affordable(cost){
+return Object.keys(cost).every(k=>game[k]>=cost[k]);
+}
+function pay(cost){
+Object.keys(cost).forEach(k=>game[k]-=cost[k]);
+}
+function startBuild(type){
+const d=definitions[type];
+if(type==="shipyard"&&game.queue.some(q=>q.type==="shipyard"))return;
+if(type==="ship"&&game.sLvl<1)return alert("Construisez d'abord un chantier spatial !");
+if(game.queue.length>=3)return alert("File de construction pleine !");
+if(!affordable(d.cost))return alert("Ressources insuffisantes !");
+pay(d.cost);
+game.queue.push({type,finish:Date.now()+d.time*1000});
+document.getElementById("log").textContent=d.name+" lancé.";
+save();update();
+}
+function complete(q){
+if(q.type==="ship")game.ships++;
+else{
+game[definitions[q.type].level]++;
+if(q.type==="energy")game.energy+=5;
+}
+document.getElementById("log").textContent=definitions[q.type].name+" terminé !";
+}
+function tick(){
+const now=Date.now();
+const elapsed=Math.max(0,(now-(game.last||now))/1000);
+game.metal+=elapsed*game.mLvl*0.5;
+game.crystal+=elapsed*game.cLvl*0.25;
+game.deut+=elapsed*game.eLvl*0.07;
+game.queue=game.queue.filter(q=>{
+if(now>=q.finish){complete(q);return false}
+return true;
+});
+game.last=now;
+save();update();
+}
 function update(){
-["metal","crystal","deut","energy","mLvl","cLvl","eLvl","sLvl","ships"].forEach(k=>{
+["metal","crystal","deut","energy","ships"].forEach(k=>{
 document.getElementById(k).textContent=Math.floor(game[k]);
 });
-document.getElementById("shipButton").disabled=game.sLvl<1;
+let html="";
+Object.keys(definitions).filter(k=>k!=="ship").forEach(k=>{
+const d=definitions[k];
+html+="<p>"+d.name+" : niveau "+game[d.level]+"</p>";
+html+="<button onclick=\"startBuild('"+k+"')\">Améliorer — "+Object.entries(d.cost).map(([r,v])=>v+" "+r).join(", ")+" ("+d.time+" s)</button>";
+});
+document.getElementById("buildings").innerHTML=html;
+const q=game.queue[0];
+if(q){
+const d=definitions[q.type];
+const remaining=Math.max(0,Math.ceil((q.finish-Date.now())/1000));
+document.getElementById("construction").textContent=d.name+" en cours";
+document.getElementById("timer").textContent="Temps restant : "+remaining+" secondes";
+document.getElementById("bar").style.width=(100-remaining/d.time*100)+"%";
+}else{
+document.getElementById("construction").textContent=game.queue.length?"En attente dans la file":"Aucune construction en cours.";
+document.getElementById("timer").textContent="";
+document.getElementById("bar").style.width="0%";
 }
-function build(type){
-if(type==="metal"||type==="crystal"){
-if(game.metal<200)return alert("Pas assez de métal !");
-game.metal-=200;game[type==="metal"?"mLvl":"cLvl"]++;
 }
-if(type==="energy"){
-if(game.metal<150)return alert("Pas assez de métal !");
-game.metal-=150;game.eLvl++;
-game.energy+=5;
-}
-if(type==="shipyard"){
-if(game.metal<500||game.crystal<200)return alert("Ressources insuffisantes !");
-game.metal-=500;game.crystal-=200;game.sLvl++;
-}
-document.getElementById("log").textContent="Construction terminée : "+type;
-save();update();
-}
-function makeShip(){
-if(game.sLvl<1)return;
-if(game.metal<500||game.crystal<300||game.deut<100)
-return alert("Ressources insuffisantes !");
-game.metal-=500;game.crystal-=300;game.deut-=100;
-game.ships++;
-document.getElementById("message").textContent="Un éclaireur OR-1 a rejoint votre flotte !";
-save();update();
-}
-setInterval(()=>{
-game.metal+=game.mLvl*0.5;
-game.crystal+=game.cLvl*0.25;
-game.deut+=game.eLvl*0.07;
-save();update();
-},1000);
-update();
+setInterval(tick,1000);
+tick();
 </script>
 </body>
 </html>
-
