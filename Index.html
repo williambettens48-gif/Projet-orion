@@ -26,7 +26,7 @@ small{color:#a9c6df}
 <body>
 <header>
 <h1>PROJET ORION</h1>
-<p>UNIVERS GALACTIQUE • VERSION 0.2</p>
+<p>UNIVERS GALACTIQUE • VERSION 0.3</p>
 </header>
 <main>
 <div class="panel" style="text-align:center">
@@ -59,9 +59,17 @@ small{color:#a9c6df}
 </div>
 
 <div class="panel">
+<h2>🔬 Laboratoire scientifique</h2>
+<p id="labStatus">Construisez un laboratoire pour commencer vos recherches.</p>
+<div id="researches"></div>
+</div>
+
+<div class="panel">
 <h2>🚀 Flotte spatiale</h2>
 <p>Éclaireurs OR-1 : <b id="ships">0</b></p>
+<p>Intercepteurs OR-2 : <b id="interceptors">0</b></p>
 <button onclick="startBuild('ship')">Construire OR-1 — 500 métal, 300 cristal, 100 deutérium</button>
+<button id="or2button" onclick="startBuild('or2')">Construire OR-2 — 1000 métal, 700 cristal, 300 deutérium</button>
 </div>
 
 <div class="panel">
@@ -73,20 +81,34 @@ small{color:#a9c6df}
 <script>
 const initial={
 metal:1500,crystal:1000,deut:400,energy:14,
-mLvl:1,cLvl:1,eLvl:1,sLvl:0,ships:0,
-queue:[],last:Date.now()
+mLvl:1,cLvl:1,eLvl:1,sLvl:0,labLvl:0,
+ships:0,interceptors:0,
+tech:{energy:0,propulsion:0,defense:0},
+queue:[],research:null,last:Date.now()
 };
 let game;
 try{
 game=JSON.parse(localStorage.getItem("orionSave"))||initial;
 }catch(e){game=initial}
-if(!Array.isArray(game.queue))game.queue=[];
+game.tech=game.tech||{energy:0,propulsion:0,defense:0};
+game.queue=game.queue||[];
+game.research=game.research||null;
+game.labLvl=game.labLvl||0;
+game.interceptors=game.interceptors||0;
+
 const definitions={
 metal:{name:"Mine de métal",cost:{metal:200},time:30,level:"mLvl"},
 crystal:{name:"Mine de cristal",cost:{metal:200},time:45,level:"cLvl"},
 energy:{name:"Centrale solaire",cost:{metal:150},time:30,level:"eLvl"},
 shipyard:{name:"Chantier spatial",cost:{metal:500,crystal:200},time:60,level:"sLvl"},
-ship:{name:"Éclaireur OR-1",cost:{metal:500,crystal:300,deut:100},time:60}
+lab:{name:"Laboratoire scientifique",cost:{metal:600,crystal:400},time:60,level:"labLvl"},
+ship:{name:"Éclaireur OR-1",cost:{metal:500,crystal:300,deut:100},time:60},
+or2:{name:"Intercepteur OR-2",cost:{metal:1000,crystal:700,deut:300},time:90}
+};
+const technologies={
+energy:{name:"Technologie énergétique",cost:{metal:300,crystal:300},time:60},
+propulsion:{name:"Propulsion spatiale",cost:{metal:500,crystal:400,deut:100},time:90},
+defense:{name:"Technologie de défense",cost:{metal:400,crystal:500},time:75}
 };
 function save(){
 game.last=Date.now();
@@ -101,7 +123,10 @@ Object.keys(cost).forEach(k=>game[k]-=cost[k]);
 function startBuild(type){
 const d=definitions[type];
 if(type==="shipyard"&&game.queue.some(q=>q.type==="shipyard"))return;
-if(type==="ship"&&game.sLvl<1)return alert("Construisez d'abord un chantier spatial !");
+if(type==="ship"||type==="or2"){
+if(game.sLvl<1)return alert("Construisez d'abord un chantier spatial !");
+}
+if(type==="or2"&&game.tech.propulsion<1)return alert("Recherchez d'abord la propulsion spatiale !");
 if(game.queue.length>=3)return alert("File de construction pleine !");
 if(!affordable(d.cost))return alert("Ressources insuffisantes !");
 pay(d.cost);
@@ -109,8 +134,20 @@ game.queue.push({type,finish:Date.now()+d.time*1000});
 document.getElementById("log").textContent=d.name+" lancé.";
 save();update();
 }
+function startResearch(type){
+const d=technologies[type];
+if(game.labLvl<1)return alert("Construisez un laboratoire !");
+if(game.research)return alert("Une recherche est déjà en cours !");
+if(game.tech[type]>=1)return alert("Cette technologie est déjà débloquée !");
+if(!affordable(d.cost))return alert("Ressources insuffisantes !");
+pay(d.cost);
+game.research={type,finish:Date.now()+d.time*1000};
+document.getElementById("log").textContent="Recherche lancée : "+d.name;
+save();update();
+}
 function complete(q){
 if(q.type==="ship")game.ships++;
+else if(q.type==="or2")game.interceptors++;
 else{
 game[definitions[q.type].level]++;
 if(q.type==="energy")game.energy+=5;
@@ -127,20 +164,35 @@ game.queue=game.queue.filter(q=>{
 if(now>=q.finish){complete(q);return false}
 return true;
 });
+if(game.research&&now>=game.research.finish){
+const type=game.research.type;
+game.tech[type]=1;
+document.getElementById("log").textContent=technologies[type].name+" débloquée !";
+game.research=null;
+}
 game.last=now;
 save();update();
 }
 function update(){
-["metal","crystal","deut","energy","ships"].forEach(k=>{
+["metal","crystal","deut","energy","ships","interceptors"].forEach(k=>{
 document.getElementById(k).textContent=Math.floor(game[k]);
 });
 let html="";
-Object.keys(definitions).filter(k=>k!=="ship").forEach(k=>{
+Object.keys(definitions).filter(k=>!["ship","or2"].includes(k)).forEach(k=>{
 const d=definitions[k];
 html+="<p>"+d.name+" : niveau "+game[d.level]+"</p>";
 html+="<button onclick=\"startBuild('"+k+"')\">Améliorer — "+Object.entries(d.cost).map(([r,v])=>v+" "+r).join(", ")+" ("+d.time+" s)</button>";
 });
 document.getElementById("buildings").innerHTML=html;
+let researchHTML="";
+Object.keys(technologies).forEach(k=>{
+const t=technologies[k];
+researchHTML+="<p>"+t.name+" : niveau "+game.tech[k]+"</p>";
+researchHTML+="<button onclick=\"startResearch('"+k+"')\">Rechercher — "+Object.entries(t.cost).map(([r,v])=>v+" "+r).join(", ")+" ("+t.time+" s)</button>";
+});
+document.getElementById("researches").innerHTML=researchHTML;
+document.getElementById("labStatus").textContent=game.labLvl>0?"Laboratoire niveau "+game.labLvl:"Laboratoire non construit";
+document.getElementById("or2button").disabled=game.tech.propulsion<1||game.sLvl<1;
 const q=game.queue[0];
 if(q){
 const d=definitions[q.type];
@@ -152,6 +204,10 @@ document.getElementById("bar").style.width=(100-remaining/d.time*100)+"%";
 document.getElementById("construction").textContent=game.queue.length?"En attente dans la file":"Aucune construction en cours.";
 document.getElementById("timer").textContent="";
 document.getElementById("bar").style.width="0%";
+}
+if(game.research){
+const remaining=Math.max(0,Math.ceil((game.research.finish-Date.now())/1000));
+document.getElementById("labStatus").textContent="Recherche en cours : "+technologies[game.research.type].name+" — "+remaining+" secondes restantes.";
 }
 }
 setInterval(tick,1000);
