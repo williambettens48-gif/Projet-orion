@@ -7,346 +7,487 @@
 <title>PROJET ORION</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#030813;color:#dceaff;font-family:Arial,sans-serif;overflow:hidden}
-button{background:#102b48;color:#d9edff;border:1px solid #28618c;border-radius:5px;padding:8px 10px;font-size:12px;cursor:pointer}
-button:active{background:#23618b}
-button:disabled{opacity:.35}
-#top{position:absolute;top:0;left:0;right:0;z-index:5;background:#061323eF;border-bottom:1px solid #245078;padding:7px;display:flex;justify-content:space-around;gap:5px;flex-wrap:wrap;font-size:11px}
-.res{white-space:nowrap}
-#title{position:absolute;top:48px;left:10px;z-index:3;font-size:17px;font-weight:bold;letter-spacing:3px;color:#7dd3fc;text-shadow:0 0 12px #168acb}
-#scene{position:absolute;inset:0}
-#menu{position:absolute;z-index:4;top:82px;left:8px;width:155px;max-height:calc(100% - 100px);overflow:auto;background:#07182ddd;border:1px solid #245078;border-radius:7px;padding:7px}
-#menu button{width:100%;margin:2px 0;text-align:left}
-#panel{position:absolute;z-index:4;right:8px;top:82px;width:min(270px,48vw);max-height:calc(100% - 100px);overflow:auto;background:#07182deF;border:1px solid #245078;border-radius:7px;padding:10px;font-size:12px}
-#panel h3{margin:2px 0 10px;color:#7dd3fc;font-size:15px}
+body{margin:0;background:#020711;color:#dceaff;font-family:Arial,sans-serif;overflow:hidden}
+button{background:#102c49;color:#dceaff;border:1px solid #3476a5;border-radius:5px;padding:8px;margin:2px;font-size:12px;cursor:pointer}
+button:active{background:#2676a8}
+button:disabled{opacity:.4}
+#universe{position:fixed;inset:0;width:100%;height:100%;z-index:0;touch-action:none}
+#top{position:absolute;z-index:3;top:0;left:0;right:0;background:#061526ed;border-bottom:1px solid #28608a;display:flex;justify-content:space-around;gap:5px;padding:9px 3px;font-size:11px;flex-wrap:wrap}
+#title{position:absolute;z-index:2;top:48px;left:10px;color:#72d4ff;font-size:16px;font-weight:bold;letter-spacing:3px;text-shadow:0 0 12px #168acb}
+#menu{position:absolute;z-index:4;top:80px;left:7px;width:137px;max-height:calc(100% - 120px);overflow:auto;background:#06172bea;border:1px solid #285579;border-radius:7px;padding:5px}
+#menu button{display:block;width:100%;text-align:left;margin:2px 0;padding:8px 5px;font-size:11px}
+#panel{position:absolute;z-index:4;right:7px;top:80px;width:min(275px,calc(100% - 155px));max-height:calc(100% - 120px);overflow:auto;background:#06172bf0;border:1px solid #285579;border-radius:7px;padding:9px;font-size:12px}
+#panel h3{color:#7dd3fc;margin:2px 0 10px;font-size:15px}
 #panel h4{color:#8ecbff;margin:12px 0 5px}
-.item{border-bottom:1px solid #203c57;padding:7px 0}
-.item button{margin-top:5px}
+#panel p{line-height:1.4}
+.item{padding:8px 0;border-bottom:1px solid #203c57}
 .small{font-size:10px;color:#9bb4ce}
-#bottom{position:absolute;z-index:4;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:5px;flex-wrap:wrap;justify-content:center;width:95%}
-#bottom button{background:#0a2440eF}
-#toast{position:absolute;z-index:8;bottom:65px;left:50%;transform:translateX(-50%);background:#0d2948;border:1px solid #3982b8;border-radius:6px;padding:10px 15px;display:none;font-size:12px;max-width:90%;text-align:center}
-#missions{font-size:11px;color:#b9d7f2}
-#groundControls{display:none;position:absolute;z-index:5;bottom:75px;left:12px;gap:5px}
-#groundControls button{width:42px;height:42px;font-size:16px}
-#footer{position:absolute;bottom:0;left:0;right:0;text-align:center;color:#52728e;font-size:9px;padding:3px;pointer-events:none}
-@media(max-width:600px){
- #menu{width:125px;top:78px;padding:5px}
- #panel{top:78px;width:calc(100% - 145px);max-height:58vh;padding:7px}
- #menu button{font-size:10px;padding:7px 5px}
+#bottom{position:absolute;z-index:4;bottom:8px;left:50%;transform:translateX(-50%);width:96%;display:flex;justify-content:center;flex-wrap:wrap}
+#bottom button{background:#0b2541ed}
+#toast{display:none;position:absolute;z-index:9;bottom:65px;left:50%;transform:translateX(-50%);background:#102d4b;border:1px solid #4c9bc8;border-radius:6px;padding:10px 15px;font-size:12px;text-align:center;width:max-content;max-width:90%}
+#groundControls{display:none;position:absolute;z-index:5;bottom:75px;left:10px}
+#groundControls button{width:43px;height:43px;font-size:17px}
+#status{position:absolute;z-index:2;bottom:2px;left:0;right:0;text-align:center;font-size:9px;color:#7091ad;pointer-events:none}
+@media(max-width:500px){
+ #menu{width:119px}
+ #panel{width:calc(100% - 135px);padding:7px}
+ #menu button{font-size:10px;padding:7px 3px}
  #top{font-size:10px}
- #title{font-size:14px;top:48px}
+ #title{font-size:14px}
 }
 </style>
 </head>
 <body>
+<canvas id="universe"></canvas>
+
 <div id="top">
- <span class="res">🔩 <b id="metal">10000</b></span>
- <span class="res">💎 <b id="crystal">10000</b></span>
- <span class="res">☢ <b id="deut">0</b></span>
- <span class="res">⚡ <b id="energy">0</b></span>
- <span class="res">👥 <b id="population">250</b></span>
+<span>🔩 <b id="metal">10000</b></span>
+<span>💎 <b id="crystal">10000</b></span>
+<span>☢ <b id="deut">0</b></span>
+<span>⚡ <b id="energy">0</b></span>
+<span>👥 <b id="population">250</b></span>
 </div>
+
 <div id="title">PROJET ORION</div>
-<div id="scene"></div>
+
 <div id="menu">
- <button onclick="showSpace()">🌌 Univers</button>
- <button onclick="showGalaxy()">🪐 Carte galactique</button>
- <button onclick="showBuildings()">🏗 Constructions</button>
- <button onclick="showResearch()">🔬 Laboratoire</button>
- <button onclick="showShips()">🚀 Chantier spatial</button>
- <button onclick="showDefense()">🛡 Défenses</button>
- <button onclick="showColonies()">🌍 Colonies</button>
- <button onclick="showMissions()">🛰 Missions et flottes</button>
- <button onclick="goGround()">🧑‍🚀 Exploration au sol</button>
- <button onclick="showStats()">📊 Empire</button>
+<button onclick="showSpace()">🌌 Univers</button>
+<button onclick="showGalaxy()">🪐 Carte galactique</button>
+<button onclick="showBuildings()">🏗 Constructions</button>
+<button onclick="showResearch()">🔬 Laboratoire</button>
+<button onclick="showShips()">🚀 Chantier spatial</button>
+<button onclick="showDefense()">🛡 Défenses</button>
+<button onclick="showColonies()">🌍 Colonies</button>
+<button onclick="showMissions()">🛰 Missions et flottes</button>
+<button onclick="goGround()">🧑‍🚀 Exploration au sol</button>
+<button onclick="showStats()">📊 Empire</button>
 </div>
+
 <div id="panel">
- <h3>POSTE DE COMMANDEMENT</h3>
- <p>Bienvenue dans le système Solaria.</p>
- <p class="small">Sélectionne une planète ou un menu pour commencer.</p>
- <div id="missions"></div>
+<h3>POSTE DE COMMANDEMENT</h3>
+<p>Bienvenue dans l'univers de PROJET ORION.</p>
+<p class="small">Sélectionne un menu pour commencer.</p>
 </div>
+
 <div id="groundControls">
- <button onpointerdown="move('forward')" onpointerup="stopMove()" onpointerleave="stopMove()">▲</button>
- <button onpointerdown="move('left')" onpointerup="stopMove()" onpointerleave="stopMove()">◀</button>
- <button onpointerdown="move('back')" onpointerup="stopMove()" onpointerleave="stopMove()">▼</button>
- <button onpointerdown="move('right')" onpointerup="stopMove()" onpointerleave="stopMove()">▶</button>
+<button onclick="movePlayer('forward')">▲</button>
+<button onclick="movePlayer('left')">◀</button>
+<button onclick="movePlayer('back')">▼</button>
+<button onclick="movePlayer('right')">▶</button>
 </div>
+
 <div id="bottom">
- <button onclick="zoom(1)">＋ Zoom</button>
- <button onclick="zoom(-1)">－ Zoom</button>
- <button onclick="focusHome()">⌂ NOVA-01</button>
- <button onclick="goOrbit()">↗ Orbite</button>
+<button onclick="zoom(1)">＋ Zoom</button>
+<button onclick="zoom(-1)">－ Zoom</button>
+<button onclick="focusHome()">⌂ NOVA-01</button>
+<button onclick="goOrbit()">↗ Orbite</button>
 </div>
 <div id="toast"></div>
-<div id="footer">PROJET ORION • Prototype spatial • Sauvegarde locale automatique</div>
+<div id="status">PROJET ORION • UNIVERS SOLARIA</div>
 
-<script type="module">
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+<script>
+"use strict";
 
-/* =====================================================
-   PROJET ORION — UNIVERS ET DONNÉES
-===================================================== */
+/* =========================
+   DONNÉES DU JEU
+========================= */
 const $=id=>document.getElementById(id);
-const names=["NOVA-01","LYRA-02","VEGA-03","ORION-04","ZENITH-05","TITAN-06","ECLIPSE-07"];
 const planetInfo=[
- {name:"NOVA-01",system:"Solaria",coord:"1:1:1",type:"Planète tellurique",color:0x2584b8,owned:true},
- {name:"LYRA-02",system:"Solaria",coord:"1:1:2",type:"Planète rocheuse",color:0xb58a65},
- {name:"VEGA-03",system:"Solaria",coord:"1:1:3",type:"Planète désertique",color:0xc8a45e},
- {name:"ORION-04",system:"Solaria",coord:"1:2:1",type:"Planète océanique",color:0x277d9b},
- {name:"ZENITH-05",system:"Solaria",coord:"1:2:2",type:"Planète glacée",color:0x9bc8df},
- {name:"TITAN-06",system:"Solaria",coord:"1:2:3",type:"Lune minérale",color:0x807b83},
- {name:"ECLIPSE-07",system:"Solaria",coord:"1:3:1",type:"Planète volcanique",color:0xa84c38}
+{name:"NOVA-01",coord:"1:1:1",type:"Tellurique",color:"#2786b9"},
+{name:"LYRA-02",coord:"1:1:2",type:"Rocheuse",color:"#a98769"},
+{name:"VEGA-03",coord:"1:1:3",type:"Désertique",color:"#c9a45c"},
+{name:"ORION-04",coord:"1:2:1",type:"Océanique",color:"#277f9c"},
+{name:"ZENITH-05",coord:"1:2:2",type:"Glacée",color:"#a9d7e8"},
+{name:"TITAN-06",coord:"1:2:3",type:"Minérale",color:"#85818c"},
+{name:"ECLIPSE-07",coord:"1:3:1",type:"Volcanique",color:"#ad4937"}
 ];
+
 const buildingDefs={
- mine:{name:"Mine de métal",cost:[500,200,0],base:5,desc:"Produit du métal."},
- crystal:{name:"Mine de cristal",cost:[700,400,0],base:3,desc:"Produit du cristal."},
- solar:{name:"Centrale solaire",cost:[400,300,0],base:0,desc:"Augmente la production énergétique."},
- deut:{name:"Extracteur de deutérium",cost:[900,700,0],base:2,desc:"Produit du deutérium."},
- habitat:{name:"Habitat",cost:[600,500,0],base:0,desc:"Augmente la capacité de population."},
- lab:{name:"Laboratoire",cost:[1000,800,0],base:0,desc:"Permet les recherches."},
- hangar:{name:"Hangar spatial",cost:[1200,900,100],base:0,desc:"Permet de construire des vaisseaux."}
+mine:{name:"Mine de métal",cost:[500,200,0],desc:"Produit du métal."},
+crystal:{name:"Mine de cristal",cost:[700,400,0],desc:"Produit du cristal."},
+solar:{name:"Centrale solaire",cost:[400,300,0],desc:"Produit de l'énergie."},
+deut:{name:"Extracteur de deutérium",cost:[900,700,0],desc:"Produit du deutérium."},
+habitat:{name:"Habitat",cost:[600,500,0],desc:"Augmente la population."},
+lab:{name:"Laboratoire",cost:[1000,800,0],desc:"Permet les recherches."},
+hangar:{name:"Hangar spatial",cost:[1200,900,100],desc:"Permet de construire des vaisseaux."}
 };
+
 const shipDefs={
- scout:{name:"OR-1 Éclaireur",cost:[300,200,0],time:5,desc:"Exploration et reconnaissance."},
- fighter:{name:"OR-2 Intercepteur",cost:[600,300,100],time:8,desc:"Combat spatial."},
- colonizer:{name:"OR-3 Colonisateur",cost:[1500,1000,500],time:12,desc:"Colonisation de planètes."},
- transport:{name:"OR-4 Transporteur",cost:[900,600,200],time:9,desc:"Transport de ressources."}
+scout:{name:"OR-1 Éclaireur",cost:[300,200,0],time:5,desc:"Exploration des planètes."},
+fighter:{name:"OR-2 Intercepteur",cost:[600,300,100],time:8,desc:"Combats spatiaux."},
+colonizer:{name:"OR-3 Colonisateur",cost:[1500,1000,500],time:12,desc:"Fondation de colonies."},
+transport:{name:"OR-4 Transporteur",cost:[900,600,200],time:9,desc:"Transport de ressources."}
 };
+
 const researchDefs={
- energy:{name:"Technologie énergétique",cost:[500,500,0],desc:"Améliore la production énergétique."},
- propulsion:{name:"Propulsion",cost:[700,500,100],desc:"Améliore les déplacements."},
- weapons:{name:"Armement",cost:[800,700,100],desc:"Augmente la puissance de combat."},
- shield:{name:"Boucliers",cost:[700,800,100],desc:"Renforce les défenses."},
- exploration:{name:"Astro-navigation",cost:[1000,900,200],desc:"Débloque l'exploration avancée."}
+energy:{name:"Technologie énergétique",cost:[500,500,0],desc:"Améliore la production énergétique."},
+propulsion:{name:"Propulsion",cost:[700,500,100],desc:"Améliore les déplacements."},
+weapons:{name:"Armement",cost:[800,700,100],desc:"Augmente la puissance de combat."},
+shield:{name:"Boucliers",cost:[700,800,100],desc:"Renforce les défenses."},
+exploration:{name:"Astro-navigation",cost:[1000,900,200],desc:"Améliore l'exploration."}
 };
+
 const defenseDefs={
- turret:{name:"Tourelle laser",cost:[500,300,0],desc:"Défense contre les attaques."},
- shield:{name:"Bouclier planétaire",cost:[1200,900,300],desc:"Protège la colonie."}
+turret:{name:"Tourelle laser",cost:[500,300,0]},
+shield:{name:"Bouclier planétaire",cost:[1200,900,300]}
 };
-const freshPlanet=()=>({metal:10000,crystal:10000,deut:0,energy:0,population:250,buildings:{mine:0,crystal:0,solar:0,deut:0,habitat:0,lab:0,hangar:0},ships:{scout:0,fighter:0,colonizer:0,transport:0},defenses:{turret:0,shield:0}});
-let game={
- version:2,selected:0,mode:"space",resources:null,
- planets:planetInfo.map((p,i)=>({ ...freshPlanet(),owned:i===0,discovered:i===0,name:p.name })),
- research:{energy:0,propulsion:0,weapons:0,shield:0,exploration:0},
- queue:[],missions:[],completed:0,credits:0,last:Date.now()
+
+function newPlanet(i){
+return {
+name:planetInfo[i].name,owned:i===0,discovered:i===0,
+metal:i===0?10000:0,crystal:i===0?10000:0,deut:0,energy:0,
+population:i===0?250:0,
+buildings:{mine:0,crystal:0,solar:0,deut:0,habitat:0,lab:0,hangar:0},
+ships:{scout:0,fighter:0,colonizer:0,transport:0},
+defenses:{turret:0,shield:0}
 };
-function loadGame(){
- try{
-  let old=JSON.parse(localStorage.getItem("orionComplete")||"null");
-  if(old && old.version===2){
-   game={...game,...old};
-   if(!Array.isArray(game.planets))game.planets=[];
-   while(game.planets.length<planetInfo.length)game.planets.push({...freshPlanet(),owned:false,discovered:false});
-  }else{
-   let legacy=JSON.parse(localStorage.getItem("orionSave")||"null");
-   if(legacy){
-    const r=legacy.resources||legacy;
-    if(r.metal!==undefined)game.planets[0].metal=r.metal;
-    if(r.crystal!==undefined)game.planets[0].crystal=r.crystal;
-    if(r.deut!==undefined)game.planets[0].deut=r.deut;
-   }
-  }
- }catch(e){console.log("Nouvelle sauvegarde");}
 }
-function save(){
- game.last=Date.now();
- localStorage.setItem("orionComplete",JSON.stringify(game));
+
+let game={
+planets:planetInfo.map((p,i)=>newPlanet(i)),
+selected:0,
+research:{energy:0,propulsion:0,weapons:0,shield:0,exploration:0},
+queue:[],missions:[],completed:0
+};
+
+function loadGame(){
+try{
+let saved=JSON.parse(localStorage.getItem("orionComplete")||"null");
+if(saved&&saved.planets&&saved.planets.length===7){
+game=saved;
+game.queue=game.queue||[];
+game.missions=game.missions||[];
+}else{
+let old=JSON.parse(localStorage.getItem("orionSave")||"null");
+if(old){
+let r=old.resources||old;
+if(r.metal!==undefined)game.planets[0].metal=r.metal;
+if(r.crystal!==undefined)game.planets[0].crystal=r.crystal;
+if(r.deut!==undefined)game.planets[0].deut=r.deut;
+}
+}
+}catch(e){console.log("Sauvegarde neuve");}
 }
 loadGame();
-let current=()=>game.planets[game.selected]||game.planets[0];
+
+function save(){
+try{localStorage.setItem("orionComplete",JSON.stringify(game));}
+catch(e){console.log("Sauvegarde impossible",e);}
+}
+function current(){return game.planets[game.selected];}
+function fmt(n){return Math.floor(n||0).toLocaleString("fr-FR");}
 function notify(t){
- $("toast").textContent=t;$("toast").style.display="block";
- clearTimeout(notify.timer);notify.timer=setTimeout(()=>$("toast").style.display="none",2600);
+$("toast").textContent=t;
+$("toast").style.display="block";
+clearTimeout(window.toastTimer);
+window.toastTimer=setTimeout(()=>$("toast").style.display="none",2600);
 }
-function fmt(n){return Math.floor(n||0).toLocaleString("fr-FR")}
-function costText(c){return `🔩 ${fmt(c[0])} · 💎 ${fmt(c[1])} · ☢ ${fmt(c[2])}`}
-function canPay(c,p=current()){return p.metal>=c[0]&&p.crystal>=c[1]&&p.deut>=c[2]}
-function pay(c,p=current()){if(!canPay(c,p))return false;p.metal-=c[0];p.crystal-=c[1];p.deut-=c[2];return true}
+function costText(c){return "🔩 "+fmt(c[0])+" · 💎 "+fmt(c[1])+" · ☢ "+fmt(c[2]);}
+function canPay(c,p=current()){return p.metal>=c[0]&&p.crystal>=c[1]&&p.deut>=c[2];}
+function pay(c,p=current()){
+if(!canPay(c,p))return false;
+p.metal-=c[0];p.crystal-=c[1];p.deut-=c[2];return true;
+}
 function updateUI(){
- let p=current();
- $("metal").textContent=fmt(p.metal);$("crystal").textContent=fmt(p.crystal);
- $("deut").textContent=fmt(p.deut);$("energy").textContent=fmt(p.energy);
- $("population").textContent=fmt(p.population);
- $("missions").innerHTML=`<p>Planète : ${p.name}</p><p>Constructions : ${game.queue.length}</p><p>Missions actives : ${game.missions.length}</p>`;
- save();
-}
-function production(){
- game.planets.forEach(p=>{
-  if(!p.owned)return;
-  const b=p.buildings;
-  p.metal+=b.mine*buildingDefs.mine.base*(1+b.mine*.12);
-  p.crystal+=b.crystal*buildingDefs.crystal.base*(1+b.crystal*.12);
-  p.deut+=b.deut*buildingDefs.deut.base;
-  p.energy=Math.max(0,b.solar*20*(1+game.research.energy*.1)-(b.mine*2+b.crystal*2+b.deut*3));
-  p.population=Math.min(250+b.habitat*500,p.population+.02);
- });
-}
-function tick(){
- const now=Date.now();
- game.queue.forEach(q=>q.remaining-=1);
- let done=game.queue.filter(q=>q.remaining<=0);
- game.queue=game.queue.filter(q=>q.remaining>0);
- done.forEach(q=>{
-  const p=game.planets[q.planet];
-  if(q.type==="building")p.buildings[q.id]++;
-  if(q.type==="ship")p.ships[q.id]++;
-  if(q.type==="research")game.research[q.id]++;
-  if(q.type==="defense")p.defenses[q.id]++;
-  notify(`${q.name} terminé sur ${p.name}`);
- });
- game.missions.forEach(m=>m.remaining-=1);
- const arrived=game.missions.filter(m=>m.remaining<=0);
- game.missions=game.missions.filter(m=>m.remaining>0);
- arrived.forEach(m=>resolveMission(m));
- production();updateUI();
-}
-function addQueue(type,id,planetIndex=game.selected){
- const p=game.planets[planetIndex];
- if(game.queue.length>=3){notify("File de construction pleine : maximum 3.");return}
- let def=type==="building"?buildingDefs[id]:type==="ship"?shipDefs[id]:type==="research"?researchDefs[id]:defenseDefs[id];
- if(!def)return;
- if(type==="research"&&game.research[id]>=10){notify("Niveau maximum atteint.");return}
- if(!pay(def.cost,p)){notify("Ressources insuffisantes.");return}
- let level=type==="research"?game.research[id]:type==="building"?p.buildings[id]:0;
- let time=type==="ship"?def.time:Math.max(3,Math.round(5+level*2));
- game.queue.push({type,id,planet:planetIndex,name:def.name,remaining:time});
- notify(`${def.name} ajouté à la file (${time} s).`);
- renderCurrent();updateUI();
+let p=current();
+$("metal").textContent=fmt(p.metal);
+$("crystal").textContent=fmt(p.crystal);
+$("deut").textContent=fmt(p.deut);
+$("energy").textContent=fmt(p.energy);
+$("population").textContent=fmt(p.population);
+save();
 }
 
-/* =====================================================
-   INTERFACE DE JEU
-===================================================== */
-function panel(html){$("panel").innerHTML=html}
+/* =========================
+   MOTEUR GRAPHIQUE INTÉGRÉ
+========================= */
+const canvas=$("universe");
+const ctx=canvas.getContext("2d");
+let W=innerWidth,H=innerHeight;
+let stars=[];
+let camera={x:0,y:0,zoom:1};
+let mode="space";
+let selectedPlanet=0;
+let angle=0;
+let player={x:0,y:0};
+let drag=null;
+
+function resize(){
+W=innerWidth;H=innerHeight;
+canvas.width=W*devicePixelRatio;
+canvas.height=H*devicePixelRatio;
+ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+stars=[];
+for(let i=0;i<500;i++){
+stars.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.5+.2,a:Math.random()*.8+.2});
+}
+}
+window.addEventListener("resize",resize);
+resize();
+
+function circle(x,y,r,color,glow){
+ctx.save();
+if(glow){ctx.shadowBlur=glow;ctx.shadowColor=color;}
+ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);
+ctx.fillStyle=color;ctx.fill();ctx.restore();
+}
+
+function drawSpace(){
+ctx.fillStyle="#020711";ctx.fillRect(0,0,W,H);
+stars.forEach(s=>{
+ctx.globalAlpha=s.a;
+circle(s.x,s.y,s.r,"#b9dfff");
+});
+ctx.globalAlpha=1;
+let cx=W*.52+camera.x,cy=H*.51+camera.y;
+circle(cx,cy,19*camera.zoom,"#ffd276",35);
+circle(cx,cy,27*camera.zoom,"#ff9d36",15);
+
+planetInfo.forEach((p,i)=>{
+let distance=(75+i*48)*camera.zoom;
+let a=angle*.00012/(i+1)+i*.9;
+let x=cx+Math.cos(a)*distance;
+let y=cy+Math.sin(a)*distance*.48;
+ctx.beginPath();ctx.ellipse(cx,cy,distance,distance*.48,0,0,Math.PI*2);
+ctx.strokeStyle="#27435e";ctx.lineWidth=1;ctx.stroke();
+let r=(i===0?13:8)*camera.zoom;
+circle(x,y,r,p.color,10);
+ctx.beginPath();ctx.arc(x-r*.25,y-r*.2,r*.65,Math.PI,Math.PI*1.7);
+ctx.strokeStyle="#ffffff55";ctx.lineWidth=2;ctx.stroke();
+ctx.fillStyle="#b8d9f4";ctx.font="10px Arial";
+ctx.fillText(p.name,x-r,y-r-7);
+if(i===game.selected){
+ctx.beginPath();ctx.arc(x,y,r+5,0,Math.PI*2);
+ctx.strokeStyle="#74d9ff";ctx.stroke();
+}
+});
+}
+
+function drawGround(){
+ctx.fillStyle="#020711";ctx.fillRect(0,0,W,H);
+let cx=W/2,cy=H*.49;
+let r=Math.min(W*.46,H*.43);
+let grd=ctx.createRadialGradient(cx-r*.35,cy-r*.4,5,cx,cy,r);
+grd.addColorStop(0,"#5a9e66");
+grd.addColorStop(.45,"#286849");
+grd.addColorStop(.75,"#15516b");
+grd.addColorStop(1,"#071a36");
+circle(cx,cy,r,grd);
+ctx.save();
+ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();
+for(let i=0;i<25;i++){
+let x=cx+Math.sin(i*12.4)*r*.75;
+let y=cy+Math.cos(i*7.3)*r*.65;
+ctx.beginPath();ctx.ellipse(x,y,20+i%5*8,10+i%4*6,i,0,Math.PI*2);
+ctx.fillStyle=i%3===0?"#8c9c78":"#39764b";ctx.fill();
+}
+ctx.fillStyle="#c1d9df";
+ctx.beginPath();ctx.arc(cx+player.x,cy+player.y,6,0,Math.PI*2);ctx.fill();
+ctx.restore();
+ctx.strokeStyle="#65c9ff";ctx.lineWidth=3;
+ctx.beginPath();ctx.arc(cx,cy,r+3,0,Math.PI*2);ctx.stroke();
+ctx.fillStyle="#d7edff";ctx.font="bold 14px Arial";
+ctx.fillText("NOVA-01 • SURFACE",15,75);
+ctx.font="11px Arial";ctx.fillText("Exploration de la planète",15,92);
+}
+
+function render(){
+angle++;
+if(mode==="space")drawSpace();else drawGround();
+requestAnimationFrame(render);
+}
+render();
+
+/* =========================
+   NAVIGATION ET SÉLECTION
+========================= */
+function panel(html){$("panel").innerHTML=html;}
 function showSpace(){
- game.mode="space";$("groundControls").style.display="none";
- spaceGroup.visible=true;groundGroup.visible=false;
- camera.position.set(0,100,270);camera.lookAt(0,0,0);
- panel(`<h3>UNIVERS DE SOLARIA</h3><p>Explorez un univers composé de planètes et de systèmes stellaires.</p><p class="small">Faites glisser pour tourner la caméra. Touchez une planète pour la sélectionner.</p><button onclick="focusHome()">Centrer NOVA-01</button>`);
- save();
+mode="space";$("groundControls").style.display="none";
+panel(`<h3>UNIVERS DE SOLARIA</h3>
+<p>Votre civilisation commence sur NOVA-01.</p>
+<p class="small">Touchez une planète pour la sélectionner. Déplacez la carte avec le doigt.</p>
+<button onclick="focusHome()">Centrer NOVA-01</button>`);
 }
 function showGalaxy(){
- let html=`<h3>CARTE GALACTIQUE</h3><p class="small">Système Solaria • Secteur 1</p>`;
- planetInfo.forEach((pl,i)=>{
-  let p=game.planets[i];
-  html+=`<div class="item"><b>${pl.name}</b> <span class="small">[${pl.coord}]</span><br>${pl.type}<br><span class="small">${p.owned?"Colonie contrôlée":p.discovered?"Planète découverte":"Inexplorée"}</span><br><button onclick="selectPlanet(${i})">Sélectionner</button></div>`;
- });
- panel(html);
+let html="<h3>CARTE GALACTIQUE</h3><p class='small'>Secteur 1 • Système Solaria</p>";
+planetInfo.forEach((p,i)=>{
+let d=game.planets[i];
+html+=`<div class="item"><b>${p.name}</b> [${p.coord}]<br>${p.type}<br><span class="small">${d.owned?"Colonie contrôlée":d.discovered?"Découverte":"Inexplorée"}</span><br><button onclick="selectPlanet(${i})">Sélectionner</button></div>`;
+});
+panel(html);
 }
 function selectPlanet(i){
- game.selected=i;let p=game.planets[i];showGalaxy();
- if(p.discovered)focusPlanet(i);else notify("Planète non découverte : envoyez une mission d'exploration.");
- updateUI();
+game.selected=i;selectedPlanet=i;
+updateUI();showGalaxy();
+notify(planetInfo[i].name+" sélectionnée.");
+}
+function focusHome(){
+game.selected=0;camera.x=0;camera.y=0;camera.zoom=1;
+updateUI();showSpace();
+}
+function zoom(v){
+camera.zoom=Math.max(.45,Math.min(2.5,camera.zoom+v*.15));
+}
+
+/* =========================
+   CONSTRUCTIONS
+========================= */
+function queueHTML(){
+if(!game.queue.length)return "<p class='small'>Aucune construction en cours.</p>";
+return "<h4>File de production</h4>"+game.queue.map(q=>`<div class="item">${q.name} • ${Math.ceil(q.remaining)} s</div>`).join("");
 }
 function showBuildings(){
- let p=current();let html=`<h3>CONSTRUCTIONS • ${p.name}</h3><p class="small">Niveau des installations • File maximum : 3</p>`;
- Object.entries(buildingDefs).forEach(([id,d])=>{
-  html+=`<div class="item"><b>${d.name}</b><br>Niveau ${p.buildings[id]}<br><span class="small">${d.desc}</span><br><span class="small">${costText(d.cost)}</span><br><button onclick="build('${id}')">Construire • ${Math.max(3,5+p.buildings[id]*2)} s</button></div>`;
- });
- html+=queueHTML();panel(html);
+let p=current(),html=`<h3>CONSTRUCTIONS • ${p.name}</h3>`;
+Object.entries(buildingDefs).forEach(([id,d])=>{
+html+=`<div class="item"><b>${d.name}</b><br>Niveau ${p.buildings[id]}<br><span class="small">${d.desc}</span><br><span class="small">${costText(d.cost)}</span><br><button onclick="build('${id}')">Construire</button></div>`;
+});
+html+=queueHTML();panel(html);
 }
-function build(id){addQueue("building",id)}
-function showResearch(){
- let html=`<h3>LABORATOIRE</h3><p class="small">Développez les technologies de votre civilisation.</p>`;
- Object.entries(researchDefs).forEach(([id,d])=>{
-  html+=`<div class="item"><b>${d.name}</b><br>Niveau ${game.research[id]} / 10<br><span class="small">${d.desc}</span><br><span class="small">${costText(d.cost)}</span><br><button onclick="research('${id}')">Rechercher</button></div>`;
- });
- html+=queueHTML();panel(html);
+function addQueue(type,id){
+let p=current();
+if(game.queue.length>=3){notify("Maximum 3 constructions simultanées.");return;}
+let def=type==="building"?buildingDefs[id]:type==="ship"?shipDefs[id]:type==="research"?researchDefs[id]:defenseDefs[id];
+if(!def)return;
+if(type==="research"&&game.research[id]>=10){notify("Niveau maximum atteint.");return;}
+if(!pay(def.cost,p)){notify("Ressources insuffisantes.");return;}
+let level=type==="research"?game.research[id]:type==="building"?p.buildings[id]:0;
+let duration=type==="ship"?def.time:Math.max(4,5+level*2);
+game.queue.push({type,id,planet:game.selected,name:def.name,remaining:duration});
+notify(def.name+" ajouté à la file.");
+showCurrentMenu();updateUI();
 }
-function research(id){if(current().buildings.lab<1){notify("Construisez d'abord un laboratoire.");return}addQueue("research",id)}
-function showShips(){
- let p=current();let html=`<h3>CHANTIER SPATIAL</h3><p class="small">Flotte disponible sur ${p.name}</p>`;
- Object.entries(shipDefs).forEach(([id,d])=>{
-  html+=`<div class="item"><b>${d.name}</b><br>Possédés : ${p.ships[id]}<br><span class="small">${d.desc}</span><br><span class="small">${costText(d.cost)}</span><br><button onclick="buildShip('${id}')">Construire • ${d.time} s</button></div>`;
- });
- html+=queueHTML();panel(html);
-}
-function buildShip(id){if(current().buildings.hangar<1){notify("Construisez d'abord un hangar spatial.");return}addQueue("ship",id)}
-function showDefense(){
- let p=current();let html=`<h3>DÉFENSE PLANÉTAIRE</h3>`;
- Object.entries(defenseDefs).forEach(([id,d])=>{
-  html+=`<div class="item"><b>${d.name}</b><br>Installations : ${p.defenses[id]}<br><span class="small">${d.desc}</span><br>${costText(d.cost)}<br><button onclick="buildDefense('${id}')">Construire</button></div>`;
- });
- panel(html);
-}
-function buildDefense(id){addQueue("defense",id)}
-function showColonies(){
- let html=`<h3>COLONIES</h3>`;
- game.planets.forEach((p,i)=>{
-  if(p.owned)html+=`<div class="item"><b>${p.name}</b><br>🔩 ${fmt(p.metal)} · 💎 ${fmt(p.crystal)}<br>Population : ${fmt(p.population)}<br><button onclick="selectOwned(${i})">Gérer cette colonie</button></div>`;
- });
- html+=`<p class="small">Pour fonder une colonie, découvrez une planète et envoyez un OR-3 Colonisateur.</p>`;
- panel(html);
-}
-function selectOwned(i){game.selected=i;updateUI();showBuildings();focusPlanet(i)}
-function showMissions(){
- let p=current();
- let html=`<h3>MISSIONS ET FLOTTES</h3><p>Depuis ${p.name}</p>`;
- html+=`<div class="item"><b>Exploration</b><br>Envoyer un OR-1 vers une planète inconnue.<br><button onclick="exploreSelected()">Explorer la planète sélectionnée</button></div>`;
- html+=`<div class="item"><b>Colonisation</b><br>Envoyer un OR-3 vers une planète découverte.<br><button onclick="colonizeSelected()">Coloniser la planète sélectionnée</button></div>`;
- html+=`<div class="item"><b>Raid spatial</b><br>Envoyer des OR-2 combattre des pirates.<br><button onclick="pirateMission()">Attaquer les pirates (1 OR-2)</button></div>`;
- html+=`<div class="item"><b>Transport</b><br>Envoyer des ressources vers une colonie.<br><button onclick="transportMission()">Transporter 500 métal et 300 cristal</button></div>`;
- html+=`<h4>Flottes en mission</h4>`;
- if(!game.missions.length)html+=`<p class="small">Aucune mission en cours.</p>`;
- game.missions.forEach(m=>html+=`<div class="item">${m.label}<br>Arrivée dans ${Math.max(0,m.remaining)} s</div>`);
- html+=queueHTML();panel(html);
-}
-function queueHTML(){
- if(!game.queue.length)return "";
- return `<h4>File de production</h4>`+game.queue.map(q=>`<div class="item">${q.name} • ${Math.max(0,q.remaining)} s</div>`).join("");
-}
-function showStats(){
- let owned=game.planets.filter(p=>p.owned).length;
- let ships=game.planets.reduce((a,p)=>a+Object.values(p.ships).reduce((x,y)=>x+y,0),0);
- panel(`<h3>EMPIRE ORION</h3><p>Colonies : ${owned}</p><p>Planètes connues : ${game.planets.filter(p=>p.discovered).length}</p><p>Vaisseaux : ${ships}</p><p>Missions terminées : ${game.completed}</p><h4>Technologies</h4>${Object.entries(game.research).map(([k,v])=>`<p>${researchDefs[k].name} : niveau ${v}</p>`).join("")}<h4>Sauvegarde</h4><button onclick="saveNow()">Sauvegarder maintenant</button><button onclick="resetGame()">Réinitialiser la partie</button>`);
-}
-function renderCurrent(){if($("panel").innerHTML.includes("CONSTRUCTIONS"))showBuildings()}
-function saveNow(){save();notify("Partie sauvegardée sur cet appareil.")}
-function resetGame(){if(!confirm("Effacer toute la progression et recommencer ?"))return;localStorage.removeItem("orionComplete");location.reload()}
+function build(id){addQueue("building",id);}
+function showCurrentMenu(){showBuildings();}
 
-/* =====================================================
-   MISSIONS SPATIALES
-===================================================== */
-function addMission(m){game.missions.push(m);notify("Mission lancée : "+m.label);showMissions();updateUI()}
+/* =========================
+   RECHERCHES
+========================= */
+function showResearch(){
+let html="<h3>LABORATOIRE</h3>";
+Object.entries(researchDefs).forEach(([id,d])=>{
+html+=`<div class="item"><b>${d.name}</b><br>Niveau ${game.research[id]} / 10<br><span class="small">${d.desc}</span><br>${costText(d.cost)}<br><button onclick="research('${id}')">Rechercher</button></div>`;
+});
+html+=queueHTML();panel(html);
+}
+function research(id){
+if(current().buildings.lab<1){notify("Construisez d'abord un laboratoire.");return;}
+addQueue("research",id);
+}
+
+/* =========================
+   VAISSEAUX ET DÉFENSES
+========================= */
+function showShips(){
+let p=current(),html="<h3>CHANTIER SPATIAL</h3>";
+Object.entries(shipDefs).forEach(([id,d])=>{
+html+=`<div class="item"><b>${d.name}</b><br>Possédés : ${p.ships[id]}<br><span class="small">${d.desc}</span><br>${costText(d.cost)}<br><button onclick="buildShip('${id}')">Construire (${d.time}s)</button></div>`;
+});
+html+=queueHTML();panel(html);
+}
+function buildShip(id){
+if(current().buildings.hangar<1){notify("Construisez d'abord un hangar spatial.");return;}
+addQueue("ship",id);
+}
+function showDefense(){
+let p=current(),html="<h3>DÉFENSE PLANÉTAIRE</h3>";
+Object.entries(defenseDefs).forEach(([id,d])=>{
+html+=`<div class="item"><b>${d.name}</b><br>Possédés : ${p.defenses[id]}<br>${costText(d.cost)}<br><button onclick="buildDefense('${id}')">Construire</button></div>`;
+});
+panel(html);
+}
+function buildDefense(id){addQueue("defense",id);}
+
+/* =========================
+   COLONIES
+========================= */
+function showColonies(){
+let html="<h3>COLONIES DE L'EMPIRE</h3>";
+game.planets.forEach((p,i)=>{
+if(p.owned){
+html+=`<div class="item"><b>${p.name}</b><br>🔩 ${fmt(p.metal)} • 💎 ${fmt(p.crystal)}<br>Population : ${fmt(p.population)}<br><button onclick="selectOwned(${i})">Gérer</button></div>`;
+}
+});
+html+="<p class='small'>Construisez un OR-3 Colonisateur pour fonder de nouvelles colonies.</p>";
+panel(html);
+}
+function selectOwned(i){
+game.selected=i;updateUI();showBuildings();
+}
+
+/* =========================
+   MISSIONS ET COMBATS
+========================= */
+function showMissions(){
+let html=`<h3>MISSIONS ET FLOTTES</h3><p>Départ depuis ${current().name}</p>`;
+html+=`<div class="item"><b>Exploration</b><br>Envoyer un OR-1 vers la planète sélectionnée.<br><button onclick="exploreSelected()">Lancer exploration</button></div>`;
+html+=`<div class="item"><b>Colonisation</b><br>Envoyer un OR-3.<br><button onclick="colonizeSelected()">Coloniser</button></div>`;
+html+=`<div class="item"><b>Combat spatial</b><br>Combattre les pirates avec un OR-2.<br><button onclick="pirateMission()">Attaquer les pirates</button></div>`;
+html+=`<div class="item"><b>Transport</b><br>Livrer 500 métal et 300 cristal à une colonie.<br><button onclick="transportMission()">Envoyer transport</button></div>`;
+html+="<h4>Missions en cours</h4>";
+html+=game.missions.length?game.missions.map(m=>`<div class="item">${m.label}<br>${Math.ceil(m.remaining)} secondes</div>`).join(""):"<p class='small'>Aucune mission active.</p>";
+panel(html);
+}
+function launchMission(m){
+game.missions.push(m);notify("Mission lancée : "+m.label);showMissions();updateUI();
+}
 function exploreSelected(){
- let p=current(),target=game.selected;
- if(target===0){notify("NOVA-01 est déjà connue.");return}
- if(!p.ships.scout){notify("Il faut au moins un OR-1 Éclaireur.");return}
- if(!pay([100,50,0])){notify("Il faut 100 métal et 50 cristal.");return}
- p.ships.scout--;
- addMission({type:"explore",target,planet:game.selected,label:"Exploration de "+planetInfo[target].name,remaining:10+game.research.exploration*2});
+let p=current(),i=game.selected;
+if(i===0||game.planets[i].discovered){notify("Cette planète est déjà connue.");return;}
+if(!p.ships.scout){notify("Il faut un OR-1 Éclaireur.");return;}
+if(!pay([100,50,0])){notify("Ressources insuffisantes.");return;}
+p.ships.scout--;
+launchMission({type:"explore",target:i,planet:game.selected,label:"Exploration de "+planetInfo[i].name,remaining:10});
 }
 function colonizeSelected(){
- let p=current(),target=game.selected;
- if(target===0||game.planets[target].owned){notify("Cette planète ne peut pas être colonisée.");return}
- if(!game.planets[target].discovered){notify("Explorez d'abord cette planète.");return}
- if(!p.ships.colonizer){notify("Il faut un OR-3 Colonisateur.");return}
- p.ships.colonizer--;
- addMission({type:"colonize",target,planet:game.selected,label:"Colonisation de "+planetInfo[target].name,remaining:15});
+let p=current(),i=game.selected,t=game.planets[i];
+if(i===0||t.owned){notify("Planète déjà colonisée.");return;}
+if(!t.discovered){notify("Explorez d'abord cette planète.");return;}
+if(!p.ships.colonizer){notify("Il faut un OR-3 Colonisateur.");return;}
+p.ships.colonizer--;
+launchMission({type:"colonize",target:i,planet:game.selected,label:"Colonisation de "+t.name,remaining:15});
 }
 function pirateMission(){
- let p=current();
- if(!p.ships.fighter){notify("Il faut un OR-2 Intercepteur.");return}
- p.ships.fighter--;
- addMission({type:"pirate",target:game.selected,planet:game.selected,label:"Combat contre des pirates",remaining:20});
+let p=current();
+if(!p.ships.fighter){notify("Il faut un OR-2 Intercepteur.");return;}
+p.ships.fighter--;
+launchMission({type:"pirate",planet:game.selected,label:"Combat contre les pirates",remaining:20});
 }
 function transportMission(){
- let p=current();
- let destinations=game.planets.map((x,i)=>x.owned&&i!==game.selected?i:-1).filter(i=>i>=0);
- if(!destinations.length){notify("Vous devez posséder une autre colonie.");return}
- if(!p.ships.transport){notify("Il faut un OR-4 Transporteur.");return}
- if(!pay([500,300,0])){notify("Ressources insuffisantes.");return}
- let target=destinations[0];p.ships.transport--;
- addMission({type:"transport",target,planet:game.selected,label:"Transport vers "+game.planets[target].name,remaining:15,metal:500,crystal:300});
+let p=current();
+let target=game.planets.findIndex((x,i)=>x.owned&&i!==game.selected);
+if(target<0){notify("Il faut posséder une autre colonie.");return;}
+if(!p.ships.transport){notify("Il faut un OR-4 Transporteur.");return;}
+if(!pay([500,300,0])){notify("Ressources insuffisantes.");return;}
+p.ships.transport--;
+launchMission({type:"transport",planet:game.selected,target,label:"Transport vers "+game.planets[target].name,remaining:15,metal:500,crystal:300});
 }
-function resolveMission(m){
- let origin=game.planets[m.planet],target=game.planets[m.target];
- if(m.type==="explore"){
-  target.discovered=true;
-  let reward=400+Math.floor(Math.random()*500);
-  origin.metal+=reward;origin.crystal+=200;
-  origin.ships.scout++;
-  notify(`${target.name} découverte ! Récompense : ${reward} métal.`);
-  focus
+
+/* =========================
+   EMPIRE ET SAUVEGARDE
+========================= */
+function showStats(){
+let owned=game.planets.filter(p=>p.owned).length;
+let ships=game.planets.reduce((n,p)=>n+Object.values(p.ships).reduce((a,b)=>a+b,0),0);
+panel(`<h3>EMPIRE ORION</h3>
+<p>Colonies : ${owned}</p><p>Planètes connues : ${game.planets.filter(p=>p.discovered).length}</p>
+<p>Vaisseaux : ${ships}</p><p>Missions terminées : ${game.completed}</p>
+<h4>Technologies</h4>${Object.entries(game.research).map(([k,v])=>`<p>${researchDefs[k].name} : niveau ${v}</p>`).join("")}
+<h4>Sauvegarde</h4><button onclick="saveNow()">Sauvegarder maintenant</button>
+<button onclick="resetGame()">Réinitialiser la partie</button>`);
+}
+function saveNow(){save();notify("Partie sauvegardée.");}
+function resetGame(){
+if(!confirm("Effacer la partie et recommencer ?"))return;
+localStorage.removeItem("orionComplete");location.reload();
+}
+
+/* =========================
+   EXPLORATION AU SOL
+========================= */
+function goGround(){
+mode="ground";$("groundControls").style.display="block";
+player={x:0,y:0};
+panel(`<h3>EXPLORATION AU SOL</h3>
+<p>Vous êtes sur NOVA-01.</p>
+<p class="small">Déplacez votre astronaute avec les commandes di
