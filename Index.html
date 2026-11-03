@@ -17,14 +17,14 @@ canvas{display:block}
 #menu{position:fixed;top:72px;left:9px;z-index:5;display:flex;flex-direction:column;gap:6px}
 button{background:#0b1c32ed;border:1px solid #315474;color:#e5f5ff;padding:10px;border-radius:6px;font-size:11px}
 button:active{background:#17618a}
-#panel{position:fixed;right:10px;top:75px;width:210px;padding:12px;background:#061326eF;border:1px solid #315474;border-radius:8px;z-index:5}
+#panel{position:fixed;right:10px;top:75px;width:210px;padding:12px;background:#061326ef;border:1px solid #315474;border-radius:8px;z-index:5}
 #panel h3{color:#70d9ff;margin:0 0 8px}
 #panel p{font-size:11px;line-height:1.5;color:#b5cce0}
 #panel button{width:100%;margin-top:5px}
 #status{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:4;color:#80dcff;text-shadow:0 2px 8px #000;font-size:12px;pointer-events:none}
 #help{position:fixed;left:10px;bottom:12px;z-index:5;background:#061326c9;padding:8px;border-radius:6px;font-size:10px;line-height:1.6;color:#b9d6ed}
 #mobile{display:none;position:fixed;bottom:65px;left:12px;z-index:6;gap:5px;grid-template-columns:repeat(3,43px);grid-template-rows:repeat(3,43px)}
-#mobile button{padding:0;font-size:17px;background:#09213bdc}
+#mobile button{padding:0;font-size:17px;background:#09213bdc;touch-action:none}
 #bottom{position:fixed;bottom:0;left:0;right:0;text-align:center;background:#020611b9;color:#8ba9c4;font-size:10px;padding:8px;z-index:5;pointer-events:none}
 #loading{position:fixed;inset:0;background:#020611;z-index:20;display:flex;align-items:center;justify-content:center;color:#69d9ff;font-size:20px;letter-spacing:3px}
 @media(max-width:650px){
@@ -77,7 +77,7 @@ button:active{background:#17618a}
 
 <div id="help">
  ESPACE : glisser pour tourner<br>
- SOL : WASD ou flèches pour marcher<br>
+ SOL : ZQSD / WASD pour marcher<br>
  Glisser : orienter la caméra<br>
  Molette / pincement : zoom
 </div>
@@ -86,14 +86,10 @@ button:active{background:#17618a}
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 
-// --------------------------------------------------
-// INITIALISATION
-// --------------------------------------------------
-
 const container=document.getElementById('space');
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x020611);
-scene.fog=new THREE.FogExp2(0x020611,0.00045);
+scene.fog=new THREE.FogExp2(0x020611,.00045);
 
 const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,4000);
 const renderer=new THREE.WebGLRenderer({antialias:true});
@@ -105,58 +101,28 @@ renderer.toneMappingExposure=1.2;
 container.appendChild(renderer.domElement);
 
 scene.add(new THREE.AmbientLight(0x9bb8d8,1.2));
-
 const sunLight=new THREE.PointLight(0xffffff,2600,1500,1.5);
 sunLight.position.set(0,0,0);
 scene.add(sunLight);
 
-// --------------------------------------------------
 // ÉTOILES
-// --------------------------------------------------
-
 const starsGeometry=new THREE.BufferGeometry();
 const starPositions=[];
-
 for(let i=0;i<10000;i++){
  const r=500+Math.random()*1200;
  const t=Math.random()*Math.PI*2;
  const p=Math.acos(2*Math.random()-1);
- starPositions.push(
-  r*Math.sin(p)*Math.cos(t),
-  r*Math.cos(p),
-  r*Math.sin(p)*Math.sin(t)
- );
+ starPositions.push(r*Math.sin(p)*Math.cos(t),r*Math.cos(p),r*Math.sin(p)*Math.sin(t));
 }
+starsGeometry.setAttribute('position',new THREE.Float32BufferAttribute(starPositions,3));
+scene.add(new THREE.Points(starsGeometry,new THREE.PointsMaterial({color:0xffffff,size:1.3})));
 
-starsGeometry.setAttribute(
- 'position',
- new THREE.Float32BufferAttribute(starPositions,3)
-);
-
-scene.add(new THREE.Points(
- starsGeometry,
- new THREE.PointsMaterial({color:0xffffff,size:1.3})
-));
-
-// --------------------------------------------------
 // UNIVERS SPATIAL
-// --------------------------------------------------
-
 const spaceGroup=new THREE.Group();
 scene.add(spaceGroup);
-
-const sun=new THREE.Mesh(
- new THREE.SphereGeometry(7,48,48),
- new THREE.MeshBasicMaterial({color:0xffc65c})
-);
+const sun=new THREE.Mesh(new THREE.SphereGeometry(7,48,48),new THREE.MeshBasicMaterial({color:0xffc65c}));
 spaceGroup.add(sun);
-
-const sunGlow=new THREE.Mesh(
- new THREE.SphereGeometry(9,32,32),
- new THREE.MeshBasicMaterial({
-  color:0xff9c35,transparent:true,opacity:.15
- })
-);
+const sunGlow=new THREE.Mesh(new THREE.SphereGeometry(9,32,32),new THREE.MeshBasicMaterial({color:0xff9c35,transparent:true,opacity:.15}));
 spaceGroup.add(sunGlow);
 
 const planetData=[
@@ -170,85 +136,43 @@ const planetData=[
 ];
 
 const spacePlanets=[];
-
 function label(text){
- const c=document.createElement('canvas');
- c.width=512;c.height=128;
- const ctx=c.getContext('2d');
- ctx.fillStyle='white';
- ctx.font='bold 42px Arial';
- ctx.textAlign='center';
- ctx.fillText(text,256,75);
- const sprite=new THREE.Sprite(
-  new THREE.SpriteMaterial({
-   map:new THREE.CanvasTexture(c),transparent:true
-  })
- );
- sprite.scale.set(12,3,1);
- return sprite;
+ const c=document.createElement('canvas');c.width=512;c.height=128;
+ const ctx=c.getContext('2d');ctx.fillStyle='white';
+ ctx.font='bold 42px Arial';ctx.textAlign='center';ctx.fillText(text,256,75);
+ const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true}));
+ sprite.scale.set(12,3,1);return sprite;
 }
-
 planetData.forEach((d,i)=>{
  const group=new THREE.Group();
  const angle=i===0?0:i*.75;
  group.position.set(Math.cos(angle)*d.distance,0,Math.sin(angle)*d.distance);
-
- const material=new THREE.MeshStandardMaterial({
-  color:d.color,roughness:.85
- });
- const sphere=new THREE.Mesh(
-  new THREE.SphereGeometry(d.radius,48,48),material
- );
- sphere.userData.planet=d;
- group.add(sphere);
-
+ const sphere=new THREE.Mesh(new THREE.SphereGeometry(d.radius,48,48),new THREE.MeshStandardMaterial({color:d.color,roughness:.85}));
+ sphere.userData.planet=d;group.add(sphere);
  if(i===0){
-  sphere.material.color.set(0x397ea9);
-  const atmosphere=new THREE.Mesh(
-   new THREE.SphereGeometry(d.radius*1.09,32,32),
-   new THREE.MeshBasicMaterial({
-    color:0x50aaff,transparent:true,opacity:.12,side:THREE.BackSide
-   })
-  );
-  group.add(atmosphere);
+  group.add(new THREE.Mesh(new THREE.SphereGeometry(d.radius*1.09,32,32),new THREE.MeshBasicMaterial({color:0x50aaff,transparent:true,opacity:.12,side:THREE.BackSide})));
  }
- const tag=label(d.name);
- tag.position.y=d.radius+3;
- group.add(tag);
+ const tag=label(d.name);tag.position.y=d.radius+3;group.add(tag);
  spaceGroup.add(group);
-
  const points=[];
  for(let j=0;j<=160;j++){
   const a=j/160*Math.PI*2;
-  points.push(new THREE.Vector3(
-   Math.cos(a)*d.distance,0,Math.sin(a)*d.distance
-  ));
+  points.push(new THREE.Vector3(Math.cos(a)*d.distance,0,Math.sin(a)*d.distance));
  }
- const orbit=new THREE.Line(
-  new THREE.BufferGeometry().setFromPoints(points),
-  new THREE.LineBasicMaterial({color:0x34516b,transparent:true,opacity:.5})
- );
- spaceGroup.add(orbit);
-
+ spaceGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(points),new THREE.LineBasicMaterial({color:0x34516b,transparent:true,opacity:.5})));
  spacePlanets.push({group,sphere,data:d,angle});
 });
 
-// --------------------------------------------------
-// PLANÈTE NOVA-01 : TERRAIN PROCÉDURAL
-// --------------------------------------------------
-
+// PLANÈTE NOVA-01
 const groundGroup=new THREE.Group();
-scene.add(groundGroup);
-groundGroup.visible=false;
-
+scene.add(groundGroup);groundGroup.visible=false;
 const PLANET_RADIUS=100;
 
 function terrainHeight(n){
  const a=Math.sin(n.x*8+n.z*3)*Math.cos(n.y*7);
  const b=Math.sin(n.z*13+n.y*9)*Math.cos(n.x*6);
  const c=Math.sin(n.x*22+n.y*17+n.z*11);
- const land=a*.8+b*.5+c*.2;
- return Math.max(0,land*3.1+1.2);
+ return Math.max(0,(a*.8+b*.5+c*.2)*3.1+1.2);
 }
 
 function makeTerrain(){
@@ -256,149 +180,68 @@ function makeTerrain(){
  const positions=geometry.attributes.position;
  const colors=[];
  const color=new THREE.Color();
-
  for(let i=0;i<positions.count;i++){
-  const v=new THREE.Vector3(
-   positions.getX(i),positions.getY(i),positions.getZ(i)
-  ).normalize();
-
-  const h=terrainHeight(v);
-  const r=PLANET_RADIUS+h;
+  const v=new THREE.Vector3(positions.getX(i),positions.getY(i),positions.getZ(i)).normalize();
+  const h=terrainHeight(v),r=PLANET_RADIUS+h;
   positions.setXYZ(i,v.x*r,v.y*r,v.z*r);
-
   if(h<1.25)color.set(0x14558c);
-  else if(h<2.0)color.set(0x347d50);
-  else if(h<3.0)color.set(0x63864d);
+  else if(h<2)color.set(0x347d50);
+  else if(h<3)color.set(0x63864d);
   else color.set(0x958b65);
-
   colors.push(color.r,color.g,color.b);
  }
  geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
  geometry.computeVertexNormals();
-
- const terrain=new THREE.Mesh(
-  geometry,
-  new THREE.MeshStandardMaterial({
-   vertexColors:true,roughness:1,metalness:0
-  })
- );
- groundGroup.add(terrain);
+ groundGroup.add(new THREE.Mesh(geometry,new THREE.MeshStandardMaterial({vertexColors:true,roughness:1})));
 }
-
 makeTerrain();
 
-// Océans et atmosphère
-const ocean=new THREE.Mesh(
- new THREE.SphereGeometry(PLANET_RADIUS,96,64),
- new THREE.MeshStandardMaterial({
-  color:0x145b96,transparent:true,opacity:.25,roughness:.25
- })
-);
+const ocean=new THREE.Mesh(new THREE.SphereGeometry(PLANET_RADIUS,96,64),new THREE.MeshStandardMaterial({color:0x145b96,transparent:true,opacity:.25,roughness:.25}));
 groundGroup.add(ocean);
 
-const clouds=new THREE.Mesh(
- new THREE.SphereGeometry(PLANET_RADIUS+2.7,96,64),
- new THREE.MeshBasicMaterial({
-  color:0xddeeff,transparent:true,opacity:.10,wireframe:false
- })
-);
+const clouds=new THREE.Mesh(new THREE.SphereGeometry(PLANET_RADIUS+2.7,96,64),new THREE.MeshBasicMaterial({color:0xddeeff,transparent:true,opacity:.10}));
 groundGroup.add(clouds);
 
-const atmosphere=new THREE.Mesh(
- new THREE.SphereGeometry(PLANET_RADIUS+5,96,64),
- new THREE.MeshBasicMaterial({
-  color:0x3c9dff,transparent:true,opacity:.09,side:THREE.BackSide
- })
-);
-groundGroup.add(atmosphere);
+groundGroup.add(new THREE.Mesh(new THREE.SphereGeometry(PLANET_RADIUS+5,96,64),new THREE.MeshBasicMaterial({color:0x3c9dff,transparent:true,opacity:.09,side:THREE.BackSide})));
 
-// --------------------------------------------------
-// BÂTIMENTS DE LA COLONIE
-// --------------------------------------------------
-
+// BÂTIMENTS
 const buildings=new THREE.Group();
 groundGroup.add(buildings);
 
-function addBuilding(name,lat,lon,type){
+function addBuilding(lat,lon,type){
  const phi=THREE.MathUtils.degToRad(90-lat);
  const theta=THREE.MathUtils.degToRad(lon);
- const direction=new THREE.Vector3(
-  Math.sin(phi)*Math.cos(theta),
-  Math.cos(phi),
-  Math.sin(phi)*Math.sin(theta)
- ).normalize();
-
+ const direction=new THREE.Vector3(Math.sin(phi)*Math.cos(theta),Math.cos(phi),Math.sin(phi)*Math.sin(theta)).normalize();
  const h=terrainHeight(direction);
  const position=direction.clone().multiplyScalar(PLANET_RADIUS+h+.1);
-
  const building=new THREE.Group();
  building.position.copy(position);
- building.quaternion.setFromUnitVectors(
-  new THREE.Vector3(0,1,0),direction
- );
-
- const base=new THREE.Mesh(
-  new THREE.BoxGeometry(2.2,1.4,2.2),
-  new THREE.MeshStandardMaterial({
-   color:type==='mine'?0x728da3:0x426c92,
-   metalness:.5,roughness:.4
-  })
- );
- base.position.y=.7;
- building.add(base);
-
- const tower=new THREE.Mesh(
-  new THREE.CylinderGeometry(.45,.7,2.5,8),
-  new THREE.MeshStandardMaterial({
-   color:0x9cb8ca,metalness:.6,roughness:.3
-  })
- );
- tower.position.y=2.4;
- building.add(tower);
-
+ building.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),direction);
+ const base=new THREE.Mesh(new THREE.BoxGeometry(2.2,1.4,2.2),new THREE.MeshStandardMaterial({color:type==='mine'?0x728da3:0x426c92,metalness:.5,roughness:.4}));
+ base.position.y=.7;building.add(base);
+ const tower=new THREE.Mesh(new THREE.CylinderGeometry(.45,.7,2.5,8),new THREE.MeshStandardMaterial({color:0x9cb8ca,metalness:.6,roughness:.3}));
+ tower.position.y=2.4;building.add(tower);
  const light=new THREE.PointLight(0x45dfff,1,8);
- light.position.y=3.8;
- building.add(light);
-
- const beacon=new THREE.Mesh(
-  new THREE.SphereGeometry(.25,12,12),
-  new THREE.MeshBasicMaterial({color:0x65eaff})
- );
- beacon.position.y=3.8;
- building.add(beacon);
-
+ light.position.y=3.8;building.add(light);
+ const beacon=new THREE.Mesh(new THREE.SphereGeometry(.25,12,12),new THREE.MeshBasicMaterial({color:0x65eaff}));
+ beacon.position.y=3.8;building.add(beacon);
  buildings.add(building);
 }
+addBuilding(5,0,'command');
+addBuilding(5,7,'mine');
+addBuilding(-3,9,'energy');
+addBuilding(-7,-8,'lab');
+addBuilding(10,-10,'hangar');
 
-addBuilding('Centre de commandement',5,0,'command');
-addBuilding('Mine de métal',5,7,'mine');
-addBuilding('Centrale solaire',-3,9,'energy');
-addBuilding('Laboratoire',-7,-8,'lab');
-addBuilding('Hangar spatial',10,-10,'hangar');
-
-// --------------------------------------------------
-// MODE DE JEU ET CAMÉRA
-// --------------------------------------------------
-
-let mode='space';
-let selected='NOVA-01';
-
-let spaceTarget=new THREE.Vector3(0,0,0);
-let spaceRadius=105;
-let spaceYaw=.3;
-let spacePitch=.45;
-
+// CAMÉRA
+let mode='space',selected='NOVA-01';
+let spaceTarget=new THREE.Vector3();
+let spaceRadius=105,spaceYaw=.3,spacePitch=.45;
 let groundPosition=new THREE.Vector3(0,0,PLANET_RADIUS+3);
-let groundYaw=0;
-let groundPitch=0;
+let groundYaw=0,groundPitch=0;
 
-function surfaceDirection(){
- return groundPosition.clone().normalize();
-}
-
-function groundHeight(direction){
- return terrainHeight(direction);
-}
+function surfaceDirection(){return groundPosition.clone().normalize()}
+function groundHeight(direction){return terrainHeight(direction)}
 
 function updateSpaceCamera(){
  camera.up.set(0,1,0);
@@ -409,21 +252,14 @@ function updateSpaceCamera(){
  );
  camera.lookAt(spaceTarget);
 }
-
 function updateGroundCamera(){
  const up=surfaceDirection();
  const north=new THREE.Vector3(0,1,0);
  if(Math.abs(up.dot(north))>.98)north.set(0,0,-1);
-
  north.projectOnPlane(up).normalize();
  const east=new THREE.Vector3().crossVectors(north,up).normalize();
-
- const forward=north.clone().multiplyScalar(Math.cos(groundYaw))
-  .add(east.clone().multiplyScalar(Math.sin(groundYaw)));
-
- const look=forward.clone().multiplyScalar(Math.cos(groundPitch))
-  .add(up.clone().multiplyScalar(Math.sin(groundPitch)));
-
+ const forward=north.clone().multiplyScalar(Math.cos(groundYaw)).add(east.clone().multiplyScalar(Math.sin(groundYaw)));
+ const look=forward.clone().multiplyScalar(Math.cos(groundPitch)).add(up.clone().multiplyScalar(Math.sin(groundPitch)));
  camera.position.copy(groundPosition);
  camera.up.copy(up);
  camera.lookAt(groundPosition.clone().add(look));
@@ -433,83 +269,41 @@ function setMode(newMode){
  mode=newMode;
  spaceGroup.visible=mode==='space';
  groundGroup.visible=mode==='ground';
-
- document.getElementById('mobile').style.display=
-  mode==='ground'&&innerWidth<=650?'grid':'none';
-
- document.getElementById('help').innerHTML=
-  mode==='ground'
-  ?'SOL : WASD ou flèches pour marcher<br>Glisser : orienter la caméra<br>Découvrir votre colonie'
-  :'ESPACE : glisser pour tourner<br>Molette : zoomer<br>Choisir une planète';
-
- document.getElementById('status').textContent=
-  mode==='ground'?'SURFACE DE NOVA-01 · EXPLORATION':'';
+ document.getElementById('mobile').style.display=mode==='ground'&&innerWidth<=650?'grid':'none';
+ document.getElementById('help').innerHTML=mode==='ground'?'SOL : ZQSD ou flèches pour marcher<br>Glisser : orienter la caméra<br>Découvrir votre colonie':'ESPACE : glisser pour tourner<br>Molette : zoomer<br>Choisir une planète';
+ document.getElementById('status').textContent=mode==='ground'?'SURFACE DE NOVA-01 · EXPLORATION':'';
 }
 
 window.showSpace=function(){
- setMode('space');
- spaceTarget.set(0,0,0);
- spaceRadius=105;
- updateSpaceCamera();
+ setMode('space');spaceTarget.set(0,0,0);spaceRadius=105;updateSpaceCamera();
 };
 window.focusHome=function(){
- selected='NOVA-01';
- updatePanel();
- showSpace();
- spaceTarget.set(0,0,0);
- spaceRadius=28;
- updateSpaceCamera();
+ selected='NOVA-01';updatePanel();showSpace();spaceRadius=28;updateSpaceCamera();
 };
 window.goOrbit=function(){
  setMode('space');
  const p=spacePlanets.find(x=>x.data.name===selected);
- if(p){
-  spaceTarget.copy(p.group.position);
-  spaceRadius=20;
-  updateSpaceCamera();
- }
+ if(p){spaceTarget.copy(p.group.position);spaceRadius=20;updateSpaceCamera()}
 };
 window.goGround=function(){
- selected='NOVA-01';
- updatePanel();
- setMode('ground');
+ selected='NOVA-01';updatePanel();setMode('ground');
  const direction=new THREE.Vector3(0,0,1);
- const h=groundHeight(direction);
- groundPosition.copy(direction.multiplyScalar(PLANET_RADIUS+h+2));
- groundYaw=0;
- groundPitch=0;
- updateGroundCamera();
+ groundPosition.copy(direction.multiplyScalar(PLANET_RADIUS+groundHeight(direction)+2));
+ groundYaw=0;groundPitch=0;updateGroundCamera();
 };
+window.zoomPlus=function(){if(mode==='space'){spaceRadius=Math.max(8,spaceRadius*.75);updateSpaceCamera()}};
+window.zoomMinus=function(){if(mode==='space'){spaceRadius=Math.min(500,spaceRadius*1.3);updateSpaceCamera()}};
 
-window.zoomPlus=function(){
- if(mode==='space'){spaceRadius=Math.max(8,spaceRadius*.75);updateSpaceCamera()}
-};
-window.zoomMinus=function(){
- if(mode==='space'){spaceRadius=Math.min(500,spaceRadius*1.3);updateSpaceCamera()}
-};
-
-// --------------------------------------------------
-// SOURIS, CLAVIER ET COMMANDES TACTILES
-// --------------------------------------------------
-
-let dragging=false;
-let lastX=0,lastY=0;
-let moved=false;
-
+// COMMANDES
+let dragging=false,lastX=0,lastY=0,moved=false;
 renderer.domElement.addEventListener('pointerdown',e=>{
- dragging=true;
- moved=false;
- lastX=e.clientX;
- lastY=e.clientY;
+ dragging=true;moved=false;lastX=e.clientX;lastY=e.clientY;
  renderer.domElement.setPointerCapture(e.pointerId);
 });
-
 renderer.domElement.addEventListener('pointermove',e=>{
  if(!dragging)return;
- const dx=e.clientX-lastX;
- const dy=e.clientY-lastY;
+ const dx=e.clientX-lastX,dy=e.clientY-lastY;
  if(Math.abs(dx)+Math.abs(dy)>2)moved=true;
-
  if(mode==='space'){
   spaceYaw-=dx*.006;
   spacePitch=Math.max(.06,Math.min(1.48,spacePitch+dy*.006));
@@ -519,38 +313,24 @@ renderer.domElement.addEventListener('pointermove',e=>{
   groundPitch=Math.max(-1.1,Math.min(1.1,groundPitch+dy*.006));
   updateGroundCamera();
  }
- lastX=e.clientX;
- lastY=e.clientY;
+ lastX=e.clientX;lastY=e.clientY;
 });
-
 renderer.domElement.addEventListener('pointerup',e=>{
  dragging=false;
  if(mode==='space'&&!moved)selectPlanetAt(e.clientX,e.clientY);
 });
-
 renderer.domElement.addEventListener('wheel',e=>{
- if(mode==='space'){
-  spaceRadius=Math.max(8,Math.min(500,spaceRadius+e.deltaY*.08));
-  updateSpaceCamera();
- }
+ if(mode==='space'){spaceRadius=Math.max(8,Math.min(500,spaceRadius+e.deltaY*.08));updateSpaceCamera()}
 },{passive:true});
 
 const keys={};
-window.addEventListener('keydown',e=>{
- keys[e.key.toLowerCase()]=true;
-});
-window.addEventListener('keyup',e=>{
- keys[e.key.toLowerCase()]=false;
-});
+window.addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true});
+window.addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false});
 
 const movement={forward:false,back:false,left:false,right:false,up:false};
-
 document.querySelectorAll('[data-move]').forEach(button=>{
  const key=button.dataset.move;
- button.addEventListener('pointerdown',e=>{
-  e.preventDefault();
-  movement[key]=true;
- });
+ button.addEventListener('pointerdown',e=>{e.preventDefault();movement[key]=true});
  ['pointerup','pointerleave','pointercancel'].forEach(event=>{
   button.addEventListener(event,()=>movement[key]=false);
  });
@@ -558,107 +338,96 @@ document.querySelectorAll('[data-move]').forEach(button=>{
 
 function moveOnPlanet(dt){
  if(mode!=='ground')return;
-
- const forwardInput=(keys.w||keys.arrowup||movement.forward?1:0)
-  -(keys.s||keys.arrowdown||movement.back?1:0);
- const sideInput=(keys.d||keys.arrowright||movement.right?1:0)
-  -(keys.a||keys.arrowleft||movement.left?1:0);
-
+ const forwardInput=(keys.w||keys.z||keys.arrowup||movement.forward?1:0)-(keys.s||keys.arrowdown||movement.back?1:0);
+ const sideInput=(keys.d||keys.arrowright||movement.right?1:0)-(keys.a||keys.q||keys.arrowleft||movement.left?1:0);
  if(!forwardInput&&!sideInput)return;
-
  const up=surfaceDirection();
  const north=new THREE.Vector3(0,1,0);
  if(Math.abs(up.dot(north))>.98)north.set(0,0,-1);
  north.projectOnPlane(up).normalize();
-
  const east=new THREE.Vector3().crossVectors(north,up).normalize();
-
- const forward=north.clone().multiplyScalar(Math.cos(groundYaw))
-  .add(east.clone().multiplyScalar(Math.sin(groundYaw)));
+ const forward=north.clone().multiplyScalar(Math.cos(groundYaw)).add(east.clone().multiplyScalar(Math.sin(groundYaw)));
  const right=new THREE.Vector3().crossVectors(forward,up).normalize();
-
- const movementVector=forward.multiplyScalar(forwardInput)
-  .add(right.multiplyScalar(sideInput));
-
+ const movementVector=forward.multiplyScalar(forwardInput).add(right.multiplyScalar(sideInput));
  if(movementVector.lengthSq()<.001)return;
  movementVector.normalize();
-
- const speed=8;
- const angle=speed*dt/PLANET_RADIUS;
+ const angle=8*dt/PLANET_RADIUS;
  const newDirection=up.clone().addScaledVector(movementVector,angle).normalize();
- const height=groundHeight(newDirection);
-
- groundPosition.copy(newDirection.multiplyScalar(PLANET_RADIUS+height+2));
+ groundPosition.copy(newDirection.multiplyScalar(PLANET_RADIUS+groundHeight(newDirection)+2));
  updateGroundCamera();
 }
 
-// Sélection des planètes en espace
+// SÉLECTION PLANÈTE
 const raycaster=new THREE.Raycaster();
 const pointer=new THREE.Vector2();
-
 function selectPlanetAt(x,y){
  pointer.x=x/innerWidth*2-1;
  pointer.y=-(y/innerHeight)*2+1;
  raycaster.setFromCamera(pointer,camera);
  const hits=raycaster.intersectObjects(spacePlanets.map(p=>p.sphere));
- if(hits.length){
-  selected=hits[0].object.userData.planet.name;
-  updatePanel();
- }
+ if(hits.length){selected=hits[0].object.userData.planet.name;updatePanel()}
 }
-
 function updatePanel(){
  const p=planetData.find(x=>x.name===selected);
  if(!p)return;
  document.getElementById('planetName').textContent=p.name;
  document.getElementById('planetDesc').textContent=p.desc;
- document.getElementById('planetCoords').textContent=
-  'Coordonnées : '+p.coords+' · '+p.type;
+ document.getElementById('planetCoords').textContent='Coordonnées : '+p.coords+' · '+p.type;
 }
 updatePanel();
 
-// --------------------------------------------------
-// RESSOURCES ET SAUVEGARDE
-// --------------------------------------------------
-
-let oldSave=null;
-let newSave=null;
-
+// SAUVEGARDE
+let oldSave=null,newSave=null;
 try{oldSave=JSON.parse(localStorage.getItem('orionSave')||'null')}catch(e){}
 try{newSave=JSON.parse(localStorage.getItem('orion3D')||'null')}catch(e){}
-
-const resources=newSave?.resources||oldSave?.resources||{
- metal:10000,crystal:10000,deut:0,energy:0
-};
+const resources=newSave?.resources||oldSave?.resources||{metal:10000,crystal:10000,deut:0,energy:0};
 
 function showResources(){
  for(const key of ['metal','crystal','deut','energy']){
-  const value=Number(resources[key]??0);
-  document.getElementById(key).textContent=
-   Math.floor(value).toLocaleString('fr-FR');
+  document.getElementById(key).textContent=Math.floor(Number(resources[key]??0)).toLocaleString('fr-FR');
  }
 }
-
 function saveGame(){
- try{
-  localStorage.setItem('orion3D',JSON.stringify({
-   resources,
-   selected,
-   mode
-  }));
- }catch(e){}
+ try{localStorage.setItem('orion3D',JSON.stringify({resources,selected,mode}))}catch(e){}
 }
 showResources();
-
 window.addEventListener('beforeunload',saveGame);
 setInterval(saveGame,5000);
 
-// --------------------------------------------------
 // ANIMATION
-// --------------------------------------------------
-
 const clock=new THREE.Clock();
-
 function animate(){
  requestAnimationFrame(animate);
- const dt=Math.min(clock.getDelta(),.05
+ const dt=Math.min(clock.getDelta(),.05);
+ sun.rotation.y+=dt*.08;
+ spacePlanets.forEach(p=>{
+  p.sphere.rotation.y+=dt*.12;
+  p.angle+=dt*p.data.speed;
+  p.group.position.x=Math.cos(p.angle)*p.data.distance;
+  p.group.position.z=Math.sin(p.angle)*p.data.distance;
+ });
+ clouds.rotation.y+=dt*.004;
+ if(mode==='ground'){
+  moveOnPlanet(dt);
+  buildings.children.forEach((b,i)=>{
+   const light=b.children[2];
+   if(light)light.intensity=1+Math.sin(clock.elapsedTime*2+i)*.4;
+  });
+ }
+ renderer.render(scene,camera);
+}
+animate();
+
+window.addEventListener('resize',()=>{
+ camera.aspect=innerWidth/innerHeight;
+ camera.updateProjectionMatrix();
+ renderer.setSize(innerWidth,innerHeight);
+ document.getElementById('mobile').style.display=mode==='ground'&&innerWidth<=650?'grid':'none';
+});
+
+if(newSave?.mode==='ground')goGround();
+else showSpace();
+document.getElementById('loading').style.display='none';
+</script>
+</body>
+</html>
