@@ -3,7 +3,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#07101f">
 <title>PROJET ORION</title>
 <style>
@@ -32,7 +32,7 @@ footer{text-align:center;color:#7892b6;font-size:12px;padding:20px}
 <body>
 <header>
 <h1>PROJET ORION</h1>
-<div class="subtitle">Univers galactique • Version 0.4</div>
+<div class="subtitle">Univers galactique • Version 0.5</div>
 </header>
 
 <main>
@@ -73,7 +73,7 @@ footer{text-align:center;color:#7892b6;font-size:12px;padding:20px}
 
 <section class="panel">
 <h2>🛰️ Missions d'exploration</h2>
-<div id="missions">Aucune mission en cours.</div>
+<div id="missions"></div>
 </section>
 
 <section class="panel">
@@ -110,16 +110,16 @@ if(!game.discovered.includes("nova"))game.discovered.push("nova");
 
 const planets=[
  {id:"nova",name:"NOVA-01",system:"Solaria",coords:"1:1:1",desc:"Votre planète mère.",cost:0,time:0,reward:0},
- {id:"lyra",name:"LYRA-02",system:"Solaria",coords:"1:1:2",desc:"Une planète rocheuse riche en métal.",cost:100,time:30,reward:500},
- {id:"vega",name:"VEGA-03",system:"Solaria",coords:"1:1:3",desc:"Un monde glacé riche en cristal.",cost:150,time:45,reward:400},
- {id:"orion",name:"ORION-04",system:"Asterion",coords:"1:2:1",desc:"Une planète mystérieuse aux réserves de deutérium.",cost:250,time:60,reward:600},
- {id:"zenith",name:"ZENITH-05",system:"Asterion",coords:"1:2:2",desc:"Un monde lointain encore inexploré.",cost:350,time:90,reward:800}
+ {id:"lyra",name:"LYRA-02",system:"Solaria",coords:"1:1:2",desc:"Une planète rocheuse riche en métal.",cost:100,time:10,reward:500},
+ {id:"vega",name:"VEGA-03",system:"Solaria",coords:"1:1:3",desc:"Un monde glacé riche en cristal.",cost:150,time:12,reward:400},
+ {id:"orion",name:"ORION-04",system:"Asterion",coords:"1:2:1",desc:"Une planète mystérieuse aux réserves de deutérium.",cost:250,time:15,reward:600},
+ {id:"zenith",name:"ZENITH-05",system:"Asterion",coords:"1:2:2",desc:"Un monde lointain encore inexploré.",cost:350,time:20,reward:800}
 ];
 
 const researches=[
- {id:"energy",name:"Technologie énergétique",m:300,c:300,d:0,time:60,desc:"Améliore les connaissances énergétiques."},
- {id:"propulsion",name:"Propulsion spatiale",m:500,c:400,d:100,time:90,desc:"Débloque l'intercepteur OR-2."},
- {id:"defense",name:"Technologie de défense",m:400,c:500,d:0,time:75,desc:"Développe les capacités défensives."}
+ {id:"energy",name:"Technologie énergétique",m:300,c:300,d:0,time:10,desc:"Améliore les connaissances énergétiques."},
+ {id:"propulsion",name:"Propulsion spatiale",m:500,c:400,d:100,time:15,desc:"Débloque l'intercepteur OR-2."},
+ {id:"defense",name:"Technologie de défense",m:400,c:500,d:0,time:12,desc:"Développe les capacités défensives."}
 ];
 
 function save(){
@@ -138,6 +138,32 @@ function spend(m,c,d){
  game.metal-=m;
  game.crystal-=c;
  game.deut-=d;
+}
+
+function durationFor(q){
+ if(q.type==="building"){
+  return q.id==="metal"||q.id==="crystal"||q.id==="solar"?5:8;
+ }
+ if(q.type==="research"){
+  const r=researches.find(x=>x.id===q.id);
+  return r?r.time:10;
+ }
+ if(q.type==="ship")return q.id==="or1"?10:15;
+ return q.total||10;
+}
+
+// Réduit aussi les délais des constructions déjà en cours.
+game.queue.forEach(q=>{
+ const newTime=durationFor(q);
+ q.timeLeft=Math.min(Number(q.timeLeft)||newTime,newTime);
+ q.total=newTime;
+});
+if(game.mission){
+ const p=planets.find(x=>x.id===game.mission.id);
+ if(p){
+  game.mission.timeLeft=Math.min(Number(game.mission.timeLeft)||p.time,p.time);
+  game.mission.total=p.time;
+ }
 }
 
 function addQueue(name,m,c,d,time,type,id){
@@ -160,6 +186,7 @@ function building(name,level,m,c,d,time,id){
  return `<div class="planet">
  <h3>${name} — Niveau ${level}</h3>
  <p class="small">Coût : ${m} métal • ${c} cristal • ${d} deutérium</p>
+ <p class="small">Construction : ${time} secondes</p>
  <button onclick="addQueue('${name}',${m},${c},${d},${time},'building','${id}')">
  Construire niveau suivant
  </button>
@@ -169,11 +196,11 @@ function building(name,level,m,c,d,time,id){
 function renderBuildings(){
  const b=game.buildings;
  document.getElementById("buildings").innerHTML=
- building("Mine de métal",b.metal,200*b.metal,100*b.metal,0,30,"metal")+
- building("Mine de cristal",b.crystal,150*b.crystal,200*b.crystal,0,45,"crystal")+
- building("Centrale solaire",b.solar,180*b.solar,80*b.solar,0,30,"solar")+
- building("Chantier spatial",b.shipyard,300,200,100,60,"shipyard")+
- building("Laboratoire scientifique",b.lab,600,400,0,60,"lab");
+ building("Mine de métal",b.metal,200*b.metal,100*b.metal,0,5,"metal")+
+ building("Mine de cristal",b.crystal,150*b.crystal,200*b.crystal,0,5,"crystal")+
+ building("Centrale solaire",b.solar,180*b.solar,80*b.solar,0,5,"solar")+
+ building("Chantier spatial",b.shipyard,300,200,100,8,"shipyard")+
+ building("Laboratoire scientifique",b.lab,600,400,0,8,"lab");
 }
 
 function startResearch(r){
@@ -199,6 +226,7 @@ function renderResearch(){
  <p class="small">${r.desc}</p>
  <p class="small">Coût : ${r.m} métal • ${r.c} cristal • ${r.d} deutérium</p>
  <p>Niveau : ${game.tech[r.id]}</p>
+ <p class="small">Recherche : ${r.time} secondes</p>
  <button onclick="startResearch(researches.find(x=>x.id==='${r.id}'))" ${game.tech[r.id]>=1?"disabled":""}>
  ${game.tech[r.id]>=1?"Recherche terminée":"Lancer la recherche"}
  </button>
@@ -212,13 +240,13 @@ function buildShip(id){
   return;
  }
  if(id==="or1"){
-  addQueue("Vaisseau éclaireur OR-1",500,300,100,60,"ship","or1");
+  addQueue("Vaisseau éclaireur OR-1",500,300,100,10,"ship","or1");
  }else{
   if(game.tech.propulsion<1){
    message("La propulsion spatiale est nécessaire.");
    return;
   }
-  addQueue("Intercepteur OR-2",1000,700,300,90,"ship","or2");
+  addQueue("Intercepteur OR-2",1000,700,300,15,"ship","or2");
  }
 }
 
@@ -228,12 +256,14 @@ function renderFleet(){
  <h3>🛰️ Éclaireur OR-1</h3>
  <p>Vaisseaux en service : ${game.ships.or1}</p>
  <p class="small">Coût : 500 métal • 300 cristal • 100 deutérium</p>
+ <p class="small">Construction : 10 secondes</p>
  <button onclick="buildShip('or1')">Construire OR-1</button>
  </div>
  <div class="planet">
  <h3>🚀 Intercepteur OR-2</h3>
  <p>Vaisseaux en service : ${game.ships.or2}</p>
  <p class="small">Nécessite la technologie de propulsion.</p>
+ <p class="small">Construction : 15 secondes</p>
  <button onclick="buildShip('or2')">Construire OR-2</button>
  </div>`;
 }
@@ -325,13 +355,11 @@ function completeItem(q){
 }
 
 function tick(){
- // Production horaire, calculée chaque seconde.
  game.metal+=game.buildings.metal*30/3600;
  game.crystal+=game.buildings.crystal*15/3600;
  game.deut+=game.buildings.solar*4/3600;
  game.energy=9+game.buildings.solar*5;
 
- // Avancement de la file.
  const remaining=[];
  for(const q of game.queue){
   q.timeLeft--;
@@ -343,7 +371,6 @@ function tick(){
  }
  game.queue=remaining;
 
- // Avancement de l'exploration.
  if(game.mission){
   game.mission.timeLeft--;
   if(game.mission.timeLeft<=0){
@@ -373,6 +400,7 @@ function render(){
  renderQueue();
 }
 
+save();
 render();
 setInterval(tick,1000);
 </script>
