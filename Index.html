@@ -203,3 +203,41 @@ function render(){
  document.getElementById("energy").textContent=fmt(game.energy);
  renderBuildings();renderResearch();renderFleet();renderGalaxy();renderMission();
 }
+function completeQueue(){
+ const now=[];
+ game.queue.forEach(q=>{
+  if(q.timeLeft<=0){
+   if(q.type==="building")game.buildings[q.id]++;
+   if(q.type==="research")game.tech[q.id]++;
+   if(q.type==="ship")game.ships[q.id]++;
+   message(q.name+" terminé !");
+  }else now.push(q);
+ });
+ game.queue=now;
+}
+function tick(){
+ game.metal+=game.buildings.metal*0.5;
+ game.crystal+=game.buildings.crystal*0.25;
+ game.deut+=game.buildings.solar*0.02;
+ game.energy=14+game.buildings.solar*5;
+ game.queue.forEach(q=>q.timeLeft--);
+ completeQueue();
+ if(game.mission){
+  game.mission.timeLeft--;
+  if(game.mission.timeLeft<=0){
+   const p=planets.find(x=>x.id===game.mission.id);
+   if(p&&!game.discovered.includes(p.id)){
+    game.discovered.push(p.id);
+    game.metal+=p.reward;
+    message(p.name+" découverte ! Récompense : "+p.reward+" métal.");
+   }
+   game.mission=null;
+  }
+ }
+ save();render();
+}
+render();
+setInterval(tick,1000);
+</script>
+</body>
+  </html>
